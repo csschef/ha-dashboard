@@ -124,9 +124,9 @@ class LightCard extends BaseCard {
         const cc = getCardColor(this.entity)
         let cardBg = ""
         let accentColor = ""
-        let iconFill = "var(--text-primary)"
-        let textColor = ""     // empty = inherit from theme
-        let subtextColor = ""
+        let iconFill = isOn ? "var(--text-primary)" : "var(--text-secondary)"
+        let textColor = isOn ? "" : "var(--text-secondary)"
+        let subtextColor = isOn ? "" : "var(--text-secondary)"
 
         if (cc && isOn) {
             const { r, g, b } = cc

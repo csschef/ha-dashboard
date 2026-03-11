@@ -39,21 +39,24 @@ export class BaseCard extends HTMLElement {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          margin-bottom: 10px; /* Space between icon row and text */
 
         }
 
         .title {
 
-          font-weight: 600;
+          font-weight: 500;
           font-size: 16px;
 
           color: var(--text-primary);
+          margin-bottom: 2px;
 
         }
 
         .subtitle {
 
-          font-size: 13px;
+          font-weight: 600;
+          font-size: 12px;
           color: var(--text-secondary);
 
         }
