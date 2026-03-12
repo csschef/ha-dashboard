@@ -1,4 +1,5 @@
 import type { HAEntity } from "../types/homeassistant"
+import { getEntity } from "../store/entity-store"
 
 export function getLightColor(entity: HAEntity): string | null {
 
@@ -84,18 +85,36 @@ export function getCardColor(entity: HAEntity): { r: number; g: number; b: numbe
     }
 
     // ── Fallback guard ────────────────────────────────────────────────────────
-    // Only use the warm-white fallback for lights that are truly on/off-only
-    // (no colour capability). If `supported_color_modes` includes any real
-    // colour mode, the light DOES have colour — it just hasn't reported it yet
-    // because it was off. Return null and let the HA confirmation push supply
-    // the real colour, avoiding the warm-yellow flash on colour-capable lights.
+    // Determine if this light (or group) is truly on/off-only, or if it has
+    // colour capability that just hasn't been reported yet.
     const COLOR_MODES = ["color_temp", "xy", "rgb", "rgbw", "rgbww", "hs"]
-    const supportedModes: string[] = attr.supported_color_modes || []
-    if (supportedModes.some((m: string) => COLOR_MODES.includes(m))) {
-        return null  // colour-capable light — wait for real HA data
+
+    // For group entities, check the ACTIVE children rather than the group's own
+    // supported_color_modes (which aggregates ALL children, even inactive ones).
+    const childIds: string[] | undefined = attr.entity_id
+    if (childIds && childIds.length > 0) {
+        let anyActiveChildHasColor = false
+        for (const childId of childIds) {
+            const child = getEntity(childId)
+            if (!child || child.state !== "on") continue
+            const childModes: string[] = child.attributes?.supported_color_modes || []
+            if (childModes.some((m: string) => COLOR_MODES.includes(m))) {
+                anyActiveChildHasColor = true
+                break
+            }
+        }
+        // If no active child supports colour, use the warm fallback.
+        // If any active child does, wait for HA to push the real colour data.
+        if (anyActiveChildHasColor) return null
+    } else {
+        // Individual light — check its own supported_color_modes
+        const supportedModes: string[] = attr.supported_color_modes || []
+        if (supportedModes.some((m: string) => COLOR_MODES.includes(m))) {
+            return null  // colour-capable light — wait for real HA data
+        }
     }
 
-    // Truly on/off-only light (e.g. fairy lights, simple switch).
+    // Truly on/off-only light or group with only on/off children active.
     // 2700 K ≈ 370 mireds → t ≈ 0.626 → warm amber-white on the gradient.
     const FALLBACK_MIRED = 1_000_000 / 2700
     const minMF = 153
