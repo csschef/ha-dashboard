@@ -13,24 +13,18 @@ export class BaseCard extends HTMLElement {
 
         .card {
 
-          background: var(--color-card);
+          background: var(--card-bg, var(--color-card));
           border-radius: var(--radius-md);
 
           padding: var(--space-md);
 
-          box-shadow:
-          0 4px 12px rgba(0,0,0,0.2);
-
           transition:
-          transform 0.15s ease,
-          box-shadow 0.15s ease;
+            background 0.35s ease,
+            transform 0.15s ease;
 
         }
 
         .card:active {
-
-        box-shadow:
-        0 2px 6px rgba(0,0,0,0.3);
 
         }
 
@@ -54,7 +48,8 @@ export class BaseCard extends HTMLElement {
           font-weight: 400;
           font-size: 16px;
 
-          color: var(--text-primary);
+          color: var(--card-text-primary, var(--text-primary));
+          transition: color 0.35s ease;
           margin-bottom: 2px;
 
         }
@@ -70,8 +65,14 @@ export class BaseCard extends HTMLElement {
 
           font-weight: 400;
           font-size: 12px;
-          color: var(--text-secondary);
+          color: var(--card-text-secondary, var(--text-secondary));
+          transition: color 0.35s ease;
 
+        }
+
+        .card-icon {
+          fill: var(--card-icon-fill, var(--text-secondary));
+          transition: fill 0.35s ease;
         }
 
         .subtitle.scrolling {
