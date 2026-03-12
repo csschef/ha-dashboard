@@ -49,14 +49,17 @@ The dashboard is built as a Single Page Application (SPA) where each UI element 
 
 ---
 
-## What I Practiced
+## Joint Development Workflow
 
-- High-performance DOM patching vs. full re-renders.
-- WebSocket state management and synchronization.
-- Complex CSS transitions and animations.
-- Custom Web Component lifecycles and shadow DOM optimization.
-- UI/UX design focusing on "Premium Feel" and micro-interactions.
-- Real-time data visualization with SVG-based graphs.
+This project is a collaborative effort between the **Human Creator** and an **AI Coding Agent (Antigravity)**. It represents a modern approach to software development where human creative direction and architectural oversight are paired with agentic AI execution.
+
+Core areas of collaboration:
+- **Human-Directed Design**: Aesthetic decisions, layout structure, and premium feel driven by human vision.
+- **AI-Agentic Implementation**: Core logic, component refactoring, and state management handled by the agent.
+- **Optimistic UI Logic**: Jointly refined to ensure zero-latency feedback on user interaction.
+- **Performance Optimization**: Deep-level DOM patching strategies implemented to eliminate re-renders.
+- **SVG Math & Utilities**: Collaborative refinement of color translation and gradient mapping.
+- **Project Structure**: Modularization of components and styles for long-term maintainability.
 
 ---
 
