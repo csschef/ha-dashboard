@@ -73,8 +73,11 @@ export function getCardColor(entity: HAEntity): { r: number; g: number; b: numbe
         mired = 1000000 / attr.color_temp_kelvin
     }
     if (mired !== undefined) {
-        const minM = attr.min_mireds ?? (attr.max_color_temp_kelvin ? 1000000 / attr.max_color_temp_kelvin : 153)
-        const maxM = attr.max_mireds ?? (attr.min_color_temp_kelvin ? 1000000 / attr.min_color_temp_kelvin : 500)
+        // We establish a strictly absolute 6535K to 2000K continuum (153 - 500 mireds) 
+        // to mathematically ensure that different bulbs programmed to 4000K don't return 
+        // entirely different shades of blue merely because their proprietary min/max bounds differ.
+        const minM = 153
+        const maxM = 500
         const t = (mired - minM) / (maxM - minM)
         const [r, g, b] = lerpGradient(t)
         return { r, g, b }

@@ -158,7 +158,9 @@ class LightCard extends BaseCard {
                 return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
             }
             const lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
-            const isLight = lum > 0.45
+            // W3C Switchover for black/white text is technically 0.179, but 0.35 ensures deeply saturated colors stay white text 
+            // while capturing all sky-blues and pastels for crisp black text.
+            const isLight = lum > 0.35
 
             iconFill = isLight ? "#1a1a1a" : "#ffffff"
             textColor = isLight ? "#1a1a1a" : "#ffffff"
