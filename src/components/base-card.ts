@@ -45,7 +45,7 @@ export class BaseCard extends HTMLElement {
 
         .title {
 
-          font-weight: 500;
+          font-weight: 400;
           font-size: 16px;
 
           color: var(--text-primary);
@@ -55,7 +55,7 @@ export class BaseCard extends HTMLElement {
 
         .subtitle {
 
-          font-weight: 600;
+          font-weight: 400;
           font-size: 12px;
           color: var(--text-secondary);
 

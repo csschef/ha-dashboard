@@ -19,6 +19,28 @@ body {
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--text-primary);
+    flex-grow: 1;
+    /* allow it to take up space between buttons */
+}
+
+.back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--space-sm);
+    padding: 0;
+    transition: background 0.15s ease;
+}
+
+.back-btn:hover {
+    background: var(--accent-muted);
 }
 
 .theme-btn {
@@ -52,4 +74,8 @@ body {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-md);
     padding: var(--space-sm) var(--space-md) var(--space-md);
+}
+
+room-divider {
+    grid-column: 1 / -1;
 }

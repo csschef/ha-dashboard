@@ -168,7 +168,14 @@ class LightCard extends BaseCard {
             this.toggle()
         })
 
-        card.onclick = () => { this.openPopup() }
+        card.onclick = () => {
+            const nav = this.getAttribute("navigate")
+            if (nav) {
+                window.location.hash = nav
+            } else {
+                this.openPopup()
+            }
+        }
 
         // ── Card background ──────────────────────────────────────────
         card.style.background = cardBg || "var(--color-card)"
