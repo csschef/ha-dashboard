@@ -20,11 +20,13 @@ Key design principles:
 
 - **Instant Feedback**: Light cards and toggles update on the same frame as the click.
 - **Dynamic Adaptive Backgrounds**: Cards automatically adjust their background color/gradient based on the light's current color temperature or RGB state.
+- **Person Tracking & Maps**: Premium, Apple-style person cards with high-resolution satellite imagery (Esri World Imagery) and dynamic map markers.
+- **Advanced Weather Dashboard**: Intelligent weather component with dynamic icon mapping and real-time reverse geocoding for precise local forecasts.
 - **Lucide Iconography**: Integrated stroke-based icons for a clean, professional look.
 - **Subview Navigation**: Intelligent routing system for per-room details and controls.
 - **History Graphs**: Interactive popups showing historical data for temperature, humidity, and other sensors.
-- **Responsive Layout**: Bento-style grid system that adapts seamlessly to desktop and mobile devices.
-- **Theme Support**: Built-in toggle for light and dark modes.
+- **Responsive Layout**: Bento-style grid system that adapts seamlessly to desktop, tablet, and mobile (HA Companion App).
+- **Theme Support**: Built-in toggle for light and dark modes with persistent storage.
 
 ---
 
@@ -65,11 +67,12 @@ Core areas of collaboration:
 
 ## Project Structure
 
-- `src/components/`: Custom Web Components (LightCard, ToggleSwitch, RoomDivider, etc.)
+- `src/components/`: Custom Web Components (LightCard, PersonCard, WeatherCard, etc.)
 - `src/store/`: State management and entity subscriptions.
-- `src/services/`: Home Assistant API interaction layer.
-- `src/utils/`: Helper functions for colors, formatting, and history processing.
-- `src/styles/`: Core design system, variables, and layout rules.
+- `src/services/`: Home Assistant API and WebSocket interaction layer.
+- `src/utils/`: Helper functions for color translation, history processing, and data formatting.
+- `src/styles/`: Design tokens, layout definitions, and component-specific styles.
+- `public/`: Static assets including the custom high-resolution weather icon set.
 
 ---
 
