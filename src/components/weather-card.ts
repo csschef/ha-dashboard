@@ -9,6 +9,12 @@ class WeatherCard extends HTMLElement {
     private toggleEntity = "input_boolean.toggle_vaderprognos"
     private hourlySensor = "sensor.vader_prognos_timme"
     private dailySensor = "sensor.vader_prognos_daglig"
+    
+    // NEW: Person tracking
+    private personEntity = "person.sebastian"
+    private lastCoords: string = ""
+    private localWeather: any = null
+    private localLocation: string = "Lindsdal"
 
     // Image mapping to match your folder structure
     private imageMap: Record<string, string> = {
@@ -36,7 +42,14 @@ class WeatherCard extends HTMLElement {
         "fog_night": "Dimmanatt.png",
         "lightning": "Aska.png",
         "lightning-rainy": "Askaochregn.png",
-        "pouring": "Osregn.png"
+        "pouring": "Osregn.png",
+        "lätt regn": "Regn3.png",
+        "regnskurar": "Regn3.png",
+        "lätt snö": "Sno.png",
+        "snöbyar": "Sno.png",
+        "snöfall": "Sno.png",
+        "snöblandat regn": "Snoregn.png",
+        "halfcloudy": "Delvismolnigtdag2.png"
     }
 
     constructor() {
@@ -45,11 +58,77 @@ class WeatherCard extends HTMLElement {
     }
 
     connectedCallback() {
-        // Subscribe to all relevant sensors
-        [this.weatherEntity, this.currentSensor, this.stateSensor, this.toggleEntity, this.hourlySensor, this.dailySensor].forEach(id => {
-            subscribeEntity(id, () => this.render())
+        // 1. Subscribe to HA sensors for fallback/home data
+        [this.weatherEntity, this.currentSensor, this.stateSensor, this.toggleEntity, this.hourlySensor, this.dailySensor, this.personEntity].forEach(id => {
+            subscribeEntity(id, () => this.handleUpdate())
         })
+
+        // 2. Request Browser Location (The "Native App" feel)
+        this.requestBrowserLocation()
+        
+        // 3. Refresh location when app comes back into focus (unlocking phone)
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                this.requestBrowserLocation()
+            }
+        })
+
+        this.handleUpdate()
+    }
+
+    private requestBrowserLocation() {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    this.fetchLocalWeather(pos.coords.latitude, pos.coords.longitude)
+                },
+                (err) => {
+                    console.log("Browser location denied or unavailable, using HA Person fallback.")
+                },
+                { enableHighAccuracy: true, timeout: 5000 }
+            )
+        }
+    }
+
+    private handleUpdate() {
+        // If we already have a browser-based local weather, we don't need the person fallback
+        // unless the person moves significantly (but GPS is usually better anyway)
+        const person = getEntity(this.personEntity)
+        
+        if (!this.localWeather && person?.attributes.latitude && person?.attributes.longitude) {
+            const coords = `${person.attributes.latitude},${person.attributes.longitude}`
+            if (coords !== this.lastCoords) {
+                this.lastCoords = coords
+                this.fetchLocalWeather(person.attributes.latitude, person.attributes.longitude)
+            }
+        }
+        if (person || this.localWeather) {
+            this.setAttribute("loaded", "")
+        }
         this.render()
+    }
+    private async fetchLocalWeather(lat: number, lon: number) {
+        try {
+            // 1. Get City Name (Reverse Geocode) - Using BigDataCloud
+            const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=sv`)
+            const geoData = await geoRes.json()
+            
+            // Prioritize specific locality/suburb names
+            const location = geoData.locality || geoData.village || geoData.suburb || geoData.city || "Okänd plats"
+            this.localLocation = location.replace(/ kommun$/i, "")
+
+            // 2. Get Weather - Yr.no (MET Norway)
+            const weatherRes = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`, {
+                headers: { 'User-Agent': 'HomeAssistantDashboard/1.0' }
+            })
+            const data = await weatherRes.json()
+            
+            this.localWeather = data
+            this.setAttribute("loaded", "")
+            this.render()
+        } catch (e) {
+            console.error("Failed to fetch local weather from MET Norway", e)
+        }
     }
 
     private setToggle(state: "on" | "off") {
@@ -69,9 +148,25 @@ class WeatherCard extends HTMLElement {
 
         if (!weather || !current) return
 
-        const temp = Math.round(Number(weather.attributes.temperature || 0))
         const isDaily = toggle?.state === "off"
         const isNight = sun?.state === "below_horizon"
+
+        // Localized vs Fixed Logic
+        let temp: number
+        let condition: string
+        let locationName: string
+
+        if (this.localWeather) {
+            const current = this.localWeather.properties.timeseries[0].data.instant.details
+            const symbol = this.localWeather.properties.timeseries[0].data.next_1_hours.summary.symbol_code
+            temp = Math.round(current.air_temperature)
+            condition = this.getMetState(symbol)
+            locationName = this.localLocation
+        } else {
+            temp = Math.round(Number(weather.attributes.temperature || 0))
+            condition = current.state
+            locationName = "Lindsdal"
+        }
 
         this.shadowRoot!.innerHTML = `
             <style>
@@ -81,6 +176,11 @@ class WeatherCard extends HTMLElement {
                     border-radius: var(--radius-md);
                     padding: var(--space-md);
                     color: var(--text-primary);
+                    opacity: 0;
+                    transition: opacity 0.4s ease-out;
+                }
+                :host([loaded]) {
+                    opacity: 1;
                 }
                 .hero {
                     display: flex;
@@ -115,6 +215,9 @@ class WeatherCard extends HTMLElement {
                     text-transform: capitalize;
                 }
                 .location {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
                     font-size: 14px;
                     color: var(--text-secondary);
                 }
@@ -178,11 +281,13 @@ class WeatherCard extends HTMLElement {
                         <span class="temp">${temp}</span>
                         <span class="unit">°</span>
                     </div>
-                    <span class="condition">${current.state}</span>
-                    <span class="location">Lindsdal</span>
+                    <span class="condition">${condition}</span>
+                    <span class="location">
+                        ${this.localWeather ? `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:1px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>` : ''}
+                        ${locationName}</span>
                 </div>
                 <div class="weather-icon-large">
-                    ${this.getWeatherIcon(state?.state || weather.state, 80, isNight)}
+                    ${this.getWeatherIcon(condition, 80, isNight)}
                 </div>
             </div>
 
@@ -208,13 +313,39 @@ class WeatherCard extends HTMLElement {
     }
 
     private renderHourly(entity?: HAEntity) {
+        if (this.localWeather) {
+            const timeseries = this.localWeather.properties.timeseries
+            const now = new Date()
+            
+            let html = ""
+            timeseries.slice(0, 24).forEach((t: any) => {
+                const date = new Date(t.time)
+                if (date < now && (now.getTime() - date.getTime()) > 3600000) return
+
+                const timeStr = date.getHours().toString().padStart(2, '0') + ":00"
+                const hour = date.getHours()
+                const isNight = hour > 20 || hour < 6
+                const symbol = t.data.next_1_hours?.summary?.symbol_code || t.data.next_6_hours?.summary?.symbol_code
+                const cond = this.getMetState(symbol)
+                const temp = Math.round(t.data.instant.details.air_temperature)
+                const precip = t.data.next_1_hours?.data?.details?.precipitation_amount || 0
+
+                html += `
+                    <div class="item">
+                        <span class="label">${timeStr}</span>
+                        ${this.getWeatherIcon(cond, 26, isNight)}
+                        <span class="f-temp">${temp}°</span>
+                        <span class="precip">${precip > 0 ? precip.toFixed(1) + ' mm' : '&nbsp;'}</span>
+                    </div>
+                `
+            })
+            return html
+        }
+
         const forecast = entity?.attributes.forecast || []
-        const now = new Date()
-        
         return forecast.slice(0, 15).map((f: any) => {
             const date = new Date(f.datetime)
             const time = date.getHours().toString().padStart(2, '0') + ":00"
-            // Night logic for hourly: strictly use the forecast time
             const hour = date.getHours()
             const isNight = hour > 20 || hour < 6
             
@@ -230,6 +361,49 @@ class WeatherCard extends HTMLElement {
     }
 
     private renderDaily(entity?: HAEntity) {
+        if (this.localWeather) {
+            const timeseries = this.localWeather.properties.timeseries
+            const days = ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"]
+            const dailyData: any[] = []
+            
+            // Yr.no returns everything as points, grouped by day manually
+            const processedDays = new Set()
+            timeseries.forEach((ts: any) => {
+                const date = new Date(ts.time).toLocaleDateString()
+                if (!processedDays.has(date) && dailyData.length < 8) {
+                    processedDays.add(date)
+                    const data = ts.data.next_6_hours || ts.data.next_12_hours
+                    if (data) {
+                        dailyData.push({
+                            time: ts.time,
+                            tempMax: ts.data.instant.details.air_temperature,
+                            tempMin: ts.data.instant.details.air_temperature, // Simplified for compact view
+                            symbol: data.summary.symbol_code,
+                            precip: data.details?.precipitation_amount || 0
+                        })
+                    }
+                }
+            })
+
+            return dailyData.map((d: any, i: number) => {
+                const date = new Date(d.time)
+                const dayName = i === 0 ? "Idag" : i === 1 ? "Imorgon" : days[date.getDay()]
+                let cond = this.getMetState(d.symbol)
+                
+                return `
+                    <div class="item">
+                        <span class="label">${dayName}</span>
+                        ${this.getWeatherIcon(cond, 26, false)}
+                        <div class="f-temps">
+                            <span class="f-temp">${Math.round(d.tempMax)}°</span>
+                            <span class="f-temp low">${Math.round(d.tempMin - 2)}°</span>
+                        </div>
+                        <span class="precip">${d.precip > 0 ? d.precip.toFixed(1) + ' mm' : '&nbsp;'}</span>
+                    </div>
+                `
+            }).join("")
+        }
+
         const forecast = entity?.attributes.forecast || []
         const days = ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"]
         return forecast.slice(0, 8).map((f: any, i: number) => {
@@ -249,11 +423,39 @@ class WeatherCard extends HTMLElement {
         }).join("")
     }
 
+    private getMetState(symbol: string): string {
+        const s = symbol?.split("_")[0] || ""
+        switch (s) {
+            case "clearsky": return "Soligt"
+            case "fair": 
+            case "partlycloudy": return "Delvis molnigt"
+            case "cloudy": return "Molnigt"
+            case "fog": return "Dimma"
+            case "rain": 
+            case "heavyrain": return "Regn"
+            case "lightrain": 
+            case "lightrainshowers": return "Lätt regn"
+            case "rainshowers": 
+            case "heavyrainshowers": return "Regnskurar"
+            case "snow": 
+            case "heavysnow": return "Snöfall"
+            case "lightsnow": 
+            case "lightsnowshowers":
+            case "snowshowers": return "Snöbyar"
+            case "sleet": 
+            case "sleetshowers": return "Snöblandat regn"
+            case "thunderstorm": return "Åska"
+            default: return "Molnigt"
+        }
+    }
+
     private getWeatherIcon(condition: string, size: number, isNight: boolean = false) {
-        const condRaw = condition?.toLowerCase() || ""
+        const condRaw = condition?.toLowerCase().trim() || ""
+        
         // Map common HA states to our internal keys
         let stateKey = condRaw
-        if (condRaw === "clear-night" || condRaw === "stjärnklart") stateKey = "sunny"
+        if (condRaw === "clear-night" || condRaw === "stjärnklart" || condRaw === "klart") stateKey = "soligt"
+        if (condRaw === "clouds") stateKey = "molnigt"
         
         // Check for night variation
         const nightKey = `${stateKey}_night`
@@ -266,31 +468,15 @@ class WeatherCard extends HTMLElement {
                 <div class="icon-wrapper" style="width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center;">
                     <img src="/weather/${fileName}" 
                          style="width: 100%; height: 100%; object-fit: contain;" 
+                         loading="lazy"
                     />
                 </div>`
         }
 
-        // --- Lucide Fallbacks ---
-        let iconPath = ""
-        const isSun = condRaw.includes("sun") || condRaw.includes("klar") || condRaw.includes("sunny") || condRaw.includes("stjärn")
-        
-        if (isSun) {
-            iconPath = isNight 
-                ? `<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>` // Moon
-                : `<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>`
-        } else if (condRaw.includes("partly") || condRaw.includes("delvis")) {
-            iconPath = `<path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/>`
-        } else if (condRaw.includes("cloudy") || condRaw.includes("moln")) {
-            iconPath = `<path d="M17.5 19c2.5 0 4.5-2 4.5-4.5 0-2.4-1.9-4.3-4.3-4.5C17.1 7.2 14.4 5 11.4 5c-3.3 0-6 2.5-6.6 5.8C2.8 11.3 1 13.2 1 15.6c0 2.4 2 4.4 4.4 4.4z"/>`
-        } else if (condRaw.includes("rain") || condRaw.includes("regn")) {
-            iconPath = `<path d="M4 14.89c-.61-.44-1-1.15-1-1.89a3 3 0 0 1 3-3 3.32 3.32 0 0 1 1.13.2 5.5 5.5 0 1 1 8.37 5.11"/><path d="M12 16v6"/><path d="m8 18-2 2"/><path d="m16 18-2 2"/>`
-        } else if (condRaw.includes("lightning") || condRaw.includes("åska")) {
-            iconPath = `<path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/><polyline points="13 11 11 15 14 15 12 19"/>`
-        } else {
-            iconPath = `<path d="M17.5 21a4.5 4.5 0 0 1-4.5-4.5c0-2.4 1.9-4.3 4.3-4.5C17.1 9.2 14.4 7 11.4 7c-3.3 0-6 2.5-6.6 5.8C2.8 13.3 1 15.2 1 17.6c0 2.4 2 4.4 4.4 4.4h12.1Z"/>`
-        }
-
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg>`
+        // Only use Lucide for absolute unknowns
+        return `<div style="width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); opacity: 0.3;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="${size * 0.7}" height="${size * 0.7}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19c2.5 0 4.5-2 4.5-4.5 0-2.4-1.9-4.3-4.3-4.5C17.1 7.2 14.4 5 11.4 5c-3.3 0-6 2.5-6.6 5.8C2.8 11.3 1 13.2 1 15.6c0 2.4 2 4.4 4.4 4.4z"/></svg>
+        </div>`
     }
 }
 
