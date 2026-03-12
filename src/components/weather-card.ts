@@ -14,7 +14,7 @@ class WeatherCard extends HTMLElement {
     private personEntity = "person.sebastian"
     private lastCoords: string = ""
     private localWeather: any = null
-    private localLocation: string = "Lindsdal"
+    private localLocation: string = "Hem"
     private isExpanded: boolean = false
 
     // Image mapping to match your folder structure
