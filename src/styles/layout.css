@@ -4,7 +4,7 @@
 
 html {
     -webkit-text-size-adjust: 100%;
-    font-size: 16px; /* Anchor rem units */
+    font-size: 16px !important; /* Lock base size — HA overrides this to 10px otherwise */
 }
 
 body {
@@ -15,7 +15,7 @@ body {
     transition: background 0.25s ease, color 0.25s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-size: 16px; /* Explicit base size to prevent HA overrides */
+    font-size: 16px !important; /* Prevent HA stylesheet from shrinking text */
     line-height: 1.5;
 }
 
