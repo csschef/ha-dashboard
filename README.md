@@ -1,4 +1,4 @@
-# HASP — Home Assistant Simplified Panel
+# HASP - Home Assistant Simplified Panel
 
 A **mobile-first**, performance-oriented dashboard for **Home Assistant** built with **Vite, TypeScript, and Web Components**.
 Designed to be a fast, beautiful, and highly personal alternative to the default Home Assistant UI — optimized for phones and tablets with the HA Companion App.
