@@ -158,6 +158,11 @@ person-card {
     display: block;
 }
 
+tv-card {
+    grid-column: span 1;
+    display: block;
+}
+
 
 /* Title/subtitle colour transitions */
 .card .title {

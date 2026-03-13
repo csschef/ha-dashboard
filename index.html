@@ -17,6 +17,8 @@
             overflow: hidden;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 </head>
 
 <body>
@@ -69,6 +71,14 @@
                 door="binary_sensor.vardagsrum_dorrsensor_altan_contact">
             </room-divider>
             <light-card name="Lampor" entity="light.vardagsrum" navigate="#vardagsrum"></light-card>
+            <tv-card 
+                name="TV" 
+                entity="media_player.tv_vardagsrum" 
+                media-entity="media_player.android_tv_192_168_50_61"
+                remote="remote.tv_vardagsrum"
+                power-script="script.android_tv_on_off"
+                soundbar="media_player.lg_soundbar">
+            </tv-card>
 
             <!-- Kök -->
             <room-divider title="Kök" temp="sensor.vardagsrum_temperatursensor_temperature"
@@ -256,6 +266,7 @@
     </div>
 
     <light-popup id="lightPopup"></light-popup>
+    <tv-popup id="tvPopup"></tv-popup>
     <history-popup id="historyPopup"></history-popup>
     <person-popup id="personPopup"></person-popup>
     <script type="module" src="/src/main.ts"></script>
