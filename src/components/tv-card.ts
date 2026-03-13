@@ -102,15 +102,6 @@ class TvCard extends BaseCard {
         if (!card) return
 
         const isOn = this.visuallyOn
-        const m = this.mediaEntity || this.tvEntity
-        const appName = m?.attributes.app_name?.toLowerCase()
-
-        let icon = "tv"
-        if (isOn) {
-            if (appName?.includes("youtube")) icon = "phu:youtube"
-            else if (appName?.includes("netflix")) icon = "phu:netflix"
-            else if (appName?.includes("disney")) icon = "phu:disney-plus"
-        }
 
         if (isOn) {
             card.style.setProperty("--card-bg", "linear-gradient(135deg, #a54acb 0%, #d988fb 100%)")
@@ -124,16 +115,15 @@ class TvCard extends BaseCard {
             card.style.removeProperty("--card-icon-fill")
         }
 
+        const TV_ICON = `<svg class="card-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>`
+
         const header = root.querySelector(".header") as HTMLElement
         if (header) {
-            const isAppIcon = icon.includes(":")
-            const iconHtml = isAppIcon
-                ? `<ha-icon class="card-icon" icon="${icon}" style="--mdc-icon-size: 20px;"></ha-icon>`
-                : `<svg class="card-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                        <line x1="8" y1="21" x2="16" y2="21"/>
-                        <line x1="12" y1="17" x2="12" y2="21"/>
-                   </svg>`
+            const iconHtml = TV_ICON
 
             const accent = isOn ? "rgb(117, 85, 149)" : ""
             const accentStyle = accent ? ` style="--toggle-accent:${accent}"` : ""
