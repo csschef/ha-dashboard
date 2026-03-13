@@ -11,6 +11,8 @@ import "./components/history-popup"
 import "./components/weather-card"
 import "./components/person-card"
 import "./components/person-popup"
+import "./components/tv-card"
+import "./components/tv-popup"
 
 import { connectHA } from "./services/ha-client"
 
