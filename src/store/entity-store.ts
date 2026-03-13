@@ -55,6 +55,11 @@ export function subscribeEntity(entityId: string, callback: Function) {
     }
 
     entityListeners[entityId].push(callback)
+    
+    // Immediate feedback: If we already have the state, send it now
+    if (entities[entityId]) {
+        callback(entities[entityId])
+    }
 }
 
 export function setCurrentUser(user: HAUser) {

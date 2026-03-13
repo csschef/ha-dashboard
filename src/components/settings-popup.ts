@@ -1,4 +1,4 @@
-import { getActivePerson, setActivePerson } from "../store/entity-store";
+import { getActivePerson, setActivePerson, getEntity } from "../store/entity-store";
 
 class SettingsPopup extends HTMLElement {
     private isOpen = false;
@@ -33,7 +33,9 @@ class SettingsPopup extends HTMLElement {
             return;
         }
 
-        const activePerson = getActivePerson();
+        const activePersonId = getActivePerson();
+        const person = getEntity(activePersonId);
+        const coords = person?.attributes.latitude ? `${person.attributes.latitude.toFixed(3)}, ${person.attributes.longitude.toFixed(3)}` : "Ingen GPS-data";
 
         this.shadowRoot!.innerHTML = `
         <style>
@@ -58,7 +60,7 @@ class SettingsPopup extends HTMLElement {
                 box-shadow: 0 20px 40px rgba(0,0,0,0.4);
                 border: 1px solid rgba(255,255,255,0.1);
             }
-            h2 { margin: 0 0 16px 0; font-size: 20px; color: #fff; text-align: center; }
+            h2 { margin: 0 0 8px 0; font-size: 20px; color: #fff; text-align: center; }
             p { margin: 0 0 24px 0; font-size: 14px; color: #8e8e93; text-align: center; }
             
             .options { display: flex; flex-direction: column; gap: 12px; }
@@ -84,6 +86,17 @@ class SettingsPopup extends HTMLElement {
             .check { color: #007aff; font-size: 20px; display: none; }
             .option.active .check { display: block; }
 
+            .debug-info {
+                margin-top: 24px;
+                padding: 12px;
+                background: rgba(0,0,0,0.2);
+                border-radius: 12px;
+                font-family: monospace;
+                font-size: 11px;
+                color: #8e8e93;
+            }
+            .debug-title { font-weight: bold; margin-bottom: 4px; color: #aaa; }
+
             .close-btn {
                 margin-top: 24px;
                 width: 100%;
@@ -100,21 +113,28 @@ class SettingsPopup extends HTMLElement {
         </style>
         <div class="backdrop" id="backdrop">
             <div class="content">
-                <h2>Inställningar</h2>
-                <p>Vem använder den här enheten?</p>
+                <h2>Enhetsinställningar</h2>
+                <p>Anpassa vyn för den här enheten.</p>
                 
                 <div class="options">
-                    <div class="option ${activePerson === 'person.sebastian' ? 'active' : ''}" data-person="person.sebastian">
+                    <div class="option ${activePersonId === 'person.sebastian' ? 'active' : ''}" data-person="person.sebastian">
                         <span class="name">Sebastian</span>
                         <span class="check">✓</span>
                     </div>
-                    <div class="option ${activePerson === 'person.sara' ? 'active' : ''}" data-person="person.sara">
+                    <div class="option ${activePersonId === 'person.sara' ? 'active' : ''}" data-person="person.sara">
                         <span class="name">Sara</span>
                         <span class="check">✓</span>
                     </div>
                 </div>
 
-                <button class="close-btn" id="closeBtn">Stäng</button>
+                <div class="debug-info">
+                    <div class="debug-title">DEBUG INFO</div>
+                    <div>Entity: ${activePersonId}</div>
+                    <div>GPS: ${coords}</div>
+                    <div>HA Connection: ${person ? 'OK' : 'Väntar på data...'}</div>
+                </div>
+
+                <button class="close-btn" id="closeBtn">Färdig</button>
             </div>
         </div>
         `;

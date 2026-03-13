@@ -5,8 +5,6 @@ import type { HAUser } from "../store/entity-store"
 
 class WeatherCard extends HTMLElement {
     private weatherEntity = "weather.smhi_home"
-    private currentSensor = "sensor.nuvarande_vader" 
-    private stateSensor = "sensor.vader_dag_natt"
     private toggleEntity = "input_boolean.toggle_vaderprognos"
     private hourlySensor = "sensor.vader_prognos_timme"
     private dailySensor = "sensor.vader_prognos_daglig"
@@ -17,42 +15,28 @@ class WeatherCard extends HTMLElement {
     private localWeather: any = null
     private localLocation: string = "Hem"
     private isExpanded: boolean = false
+    private showDebug: boolean = false
+    private fetchError: string = ""
     private viewMode: 'hourly' | 'daily' = (localStorage.getItem("weather_view_mode") as 'hourly' | 'daily') || 'daily'
 
-    // IMAGE MAPPING to match your folder structure
     private imageMap: Record<string, string> = {
-        "stjärnklart": "Stjarnklart2.png",
-        "molnigt": "Molnigt2.png",
-        "dimma": "Dimmadag.png",
-        "dimma_night": "Dimmanatt.png",
-        "åska": "Aska.png",
-        "åska och regn": "Askaochregn.png",
-        "hagel": "Hagel.png",
-        "ösregn": "Osregn.png",
-        "delvis molnigt": "Delvismolnigtdag2.png",
-        "delvis molnigt_night": "Delvismolnigtnatt.png",
-        "regn": "Regn3.png",
-        "snö": "Sno.png",
-        "snöregn": "Snoregn.png",
-        "soligt": "Soligt.png",
         "sunny": "Soligt.png",
-        "sunny_night": "Mone.png",
-        "partlycloudy": "Delvismolnigtdag2.png",
-        "partlycloudy_night": "Delvismolnigtnatt.png",
+        "clear-night": "Mone.png",
         "cloudy": "Molnigt2.png",
-        "rainy": "Regn3.png",
         "fog": "Dimmadag.png",
         "fog_night": "Dimmanatt.png",
+        "hail": "Hagel.png",
         "lightning": "Aska.png",
         "lightning-rainy": "Askaochregn.png",
+        "partlycloudy": "Delvismolnigtdag2.png",
+        "partlycloudy_night": "Delvismolnigtnatt.png",
         "pouring": "Osregn.png",
-        "lätt regn": "Regn3.png",
-        "regnskurar": "Regn3.png",
-        "lätt snö": "Sno.png",
-        "snöbyar": "Sno.png",
-        "snöfall": "Sno.png",
-        "snöblandat regn": "Snoregn.png",
-        "halfcloudy": "Delvismolnigtdag2.png"
+        "rainy": "Regn3.png",
+        "snowy": "Sno.png",
+        "snowy-rainy": "Snoregn.png",
+        "windy": "Molnigt2.png",
+        "windy-variant": "Molnigt2.png",
+        "exceptional": "Aska.png"
     }
 
     constructor() {
@@ -62,7 +46,7 @@ class WeatherCard extends HTMLElement {
 
     connectedCallback() {
         // 1. Subscribe to basic weather sensors
-        const coreSensors = [this.weatherEntity, this.currentSensor, this.stateSensor, this.hourlySensor, this.dailySensor]
+        const coreSensors = [this.weatherEntity, this.hourlySensor, this.dailySensor]
         coreSensors.forEach(id => {
             subscribeEntity(id, () => this.handleUpdate())
         })
@@ -99,6 +83,7 @@ class WeatherCard extends HTMLElement {
             const coords = `${person.attributes.latitude.toFixed(4)},${person.attributes.longitude.toFixed(4)}`
             if (coords !== this.lastCoords) {
                 this.lastCoords = coords
+                this.fetchError = ""
                 this.fetchLocalWeather(person.attributes.latitude, person.attributes.longitude)
             }
         }
@@ -110,41 +95,44 @@ class WeatherCard extends HTMLElement {
     }
     private async fetchLocalWeather(lat: number, lon: number) {
         try {
-            // 1. Get City Name (Reverse Geocode) - Using BigDataCloud
+            // Coordinate validation
+            if (isNaN(lat) || isNaN(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+                throw new Error("Invalid GPS data");
+            }
+
+            // 1. Get City Name
             const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=sv`)
+            if (!geoRes.ok) throw new Error(`Geo Error ${geoRes.status}`);
             const geoData = await geoRes.json()
             
-            // Log for debugging types of names available
-            console.log("Geo Data:", geoData)
-
-            // HARD OVERRIDE: If very close to Lindsdal coordinates
+            // Hard override for home
             const distToHome = Math.sqrt(Math.pow(lat - 56.726, 2) + Math.pow(lon - 16.326, 2))
             if (distToHome < 0.01) {
                 this.localLocation = "Lindsdal"
             } else {
-                // Better prioritizing for Swedish locations
-                // We want things like "Lindsdal" (locality) or "Södermalm" (suburb/district)
-                // but we need to clean up the long "stadsdelsområde" titles.
                 let location = geoData.locality || geoData.city || geoData.principalSubdivision || "Okänd"
-                
-                // If it's something like "Södermalms stadsdelsområde", just keep "Södermalm"
-                location = location.replace(/ stadsdelsområde$/i, "")
-                location = location.replace(/ kommun$/i, "")
-                
+                location = location.replace(/ stadsdelsområde$/i, "").replace(/ kommun$/i, "")
                 this.localLocation = location
             }
 
             // 2. Get Weather - Yr.no (MET Norway)
-            const weatherRes = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`, {
-                headers: { 'User-Agent': 'HomeAssistantDashboard/1.0' }
-            })
+            // 2. Get Weather - Yr.no (MET Norway)
+            // CRITICAL: We DO NOT set User-Agent here. It is a forbidden header in browsers
+            // and causes an immediate "Failed to fetch" security error on mobile devices.
+            const weatherRes = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`)
+
+            if (!weatherRes.ok) {
+                throw new Error(`MET ${weatherRes.status}`);
+            }
+
             const data = await weatherRes.json()
-            
             this.localWeather = data
             this.setAttribute("loaded", "")
             this.render()
-        } catch (e) {
-            console.error("Failed to fetch local weather from MET Norway", e)
+        } catch (e: any) {
+            console.error("Weather fetch failed:", e)
+            this.fetchError = e.message || "Network Error"
+            this.render()
         }
     }
 
@@ -156,14 +144,12 @@ class WeatherCard extends HTMLElement {
 
     render() {
         const weather = getEntity(this.weatherEntity)
-        const current = getEntity(this.currentSensor)
-        const state = getEntity(this.stateSensor)
         const toggle = getEntity(this.toggleEntity)
         const hourly = getEntity(this.hourlySensor)
         const daily = getEntity(this.dailySensor)
         const sun = getEntity("sun.sun")
 
-        if (!weather || !current) return
+        if (!weather) return
 
         const isDaily = this.viewMode === 'daily'
         const isNight = sun?.state === "below_horizon"
@@ -201,9 +187,11 @@ class WeatherCard extends HTMLElement {
             temp = Math.round(Number(weather.attributes.temperature || 0))
             const app = weather.attributes.apparent_temperature
             feelsLike = app != null ? Math.round(app) : temp
-            condition = current.state
+            condition = weather.state 
             locationName = "Lindsdal"
         }
+
+        const conditionLabel = this.translateCondition(condition)
 
         const formatTime = (iso: string) => {
             if (!iso) return "--:--"
@@ -420,19 +408,29 @@ class WeatherCard extends HTMLElement {
                 }
             </style>
             
-            <div class="hero">
+            <div class="hero" id="weatherHero">
                 <div class="temp-group">
                     <span class="temp">${temp}</span>
                     <span class="unit">°</span>
                 </div>
                 
-                <div class="meta">
-                    <div class="condition">${condition}</div>
+                <div class="meta" id="locationArea">
+                    <div class="condition">${conditionLabel}</div>
                     <div class="location">
                         ${this.localWeather ? `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:1px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>` : ''}
                         ${locationName}
                     </div>
                     ${feelsLike !== null ? `<div class="location" style="font-size:12px;opacity:0.6">Känns som ${feelsLike}°</div>` : ''}
+
+                    ${this.showDebug ? `
+                        <div style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 4px; margin-top: 8px; font-family: monospace; pointer-events: auto;">
+                            ID: ${this.personEntity.split('.')[1]}<br>
+                            GPS: ${this.lastCoords || 'NONE'}<br>
+                            COND: ${condition}<br>
+                            FETCH: ${this.localWeather ? 'OK' : (this.fetchError || 'WAITING')}<br>
+                            <button id="btn-refresh" style="font-size:9px; border:1px solid #fff; background:none; color:#fff; border-radius:4px; padding:2px 4px; margin-top:4px;">Force Reload</button>
+                        </div>
+                    ` : ''}
                 </div>
 
                 <div class="weather-icon-large">
@@ -467,7 +465,19 @@ class WeatherCard extends HTMLElement {
             </div>
         `
 
-        // Re-attach listeners after innerHTML replacement
+        // Re-attach listeners
+        this.shadowRoot!.getElementById("locationArea")?.addEventListener("dblclick", (e) => {
+            e.stopPropagation();
+            this.showDebug = !this.showDebug;
+            this.render();
+        });
+
+        this.shadowRoot!.getElementById("btn-refresh")?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.lastCoords = "";
+            this.handleUpdate();
+        });
+
         this.shadowRoot!.getElementById("btn-hourly")?.addEventListener("click", (e) => {
             e.stopPropagation();
             this.toggleView("hourly");
@@ -616,42 +626,61 @@ class WeatherCard extends HTMLElement {
     private getMetState(symbol: string): string {
         const s = symbol?.split("_")[0] || ""
         switch (s) {
-            case "clearsky": return "Soligt"
+            case "clearsky": return "sunny"
             case "fair": 
-            case "partlycloudy": return "Delvis molnigt"
-            case "cloudy": return "Molnigt"
-            case "fog": return "Dimma"
-            case "rain": 
-            case "heavyrain": return "Regn"
+            case "partlycloudy": return "partlycloudy"
+            case "cloudy": return "cloudy"
+            case "fog": return "fog"
+            case "rain": return "rainy"
+            case "heavyrain": return "pouring"
             case "lightrain": 
-            case "lightrainshowers": return "Lätt regn"
+            case "lightrainshowers": return "rainy"
             case "rainshowers": 
-            case "heavyrainshowers": return "Regnskurar"
+            case "heavyrainshowers": return "rainy"
             case "snow": 
-            case "heavysnow": return "Snöfall"
+            case "heavysnow": return "snowy"
             case "lightsnow": 
             case "lightsnowshowers":
-            case "snowshowers": return "Snöbyar"
+            case "snowshowers": return "snowy"
             case "sleet": 
-            case "sleetshowers": return "Snöblandat regn"
-            case "thunderstorm": return "Åska"
-            default: return "Molnigt"
+            case "sleetshowers": return "snowy-rainy"
+            case "thunderstorm": return "lightning"
+            default: return "cloudy"
         }
     }
 
+    private translateCondition(condition: string): string {
+        const dict: Record<string, string> = {
+            "sunny": "Soligt",
+            "clear-night": "Klart",
+            "cloudy": "Molnigt",
+            "fog": "Dimma",
+            "hail": "Hagel",
+            "lightning": "Åska",
+            "lightning-rainy": "Åska och regn",
+            "partlycloudy": "Delvis molnigt",
+            "pouring": "Ösregn",
+            "rainy": "Regn",
+            "snowy": "Snö",
+            "snowy-rainy": "Snöblandat regn",
+            "windy": "Blåsigt",
+            "windy-variant": "Blåsigt",
+            "exceptional": "Varning"
+        }
+        return dict[condition.toLowerCase()] || condition
+    }
+
     private getWeatherIcon(condition: string, size: number, isNight: boolean = false) {
-        const condRaw = condition?.toLowerCase().trim() || ""
+        let stateKey = (condition || "").toLowerCase().trim()
         
-        // Map common HA states to our internal keys
-        let stateKey = condRaw
-        if (condRaw === "clear-night" || condRaw === "stjärnklart" || condRaw === "klart") stateKey = "soligt"
-        if (condRaw === "clouds") stateKey = "molnigt"
-        
-        // Check for night variation
+        // Handle night swap for sunny
+        if (isNight && stateKey === "sunny") stateKey = "clear-night"
+
+        // Check for night variation in our map (fog_night, etc)
         const nightKey = `${stateKey}_night`
         const finalKey = (isNight && this.imageMap[nightKey]) ? nightKey : stateKey
         
-        const fileName = this.imageMap[finalKey]
+        const fileName = this.imageMap[finalKey] || this.imageMap[stateKey]
 
         if (fileName) {
             // Use Vite's built-in detection to handle paths correctly in both environments
