@@ -13,12 +13,21 @@ import "./components/person-card"
 import "./components/person-popup"
 import "./components/tv-card"
 import "./components/tv-popup"
+import "./components/settings-popup"
 
 import { connectHA } from "./services/ha-client"
 
 console.log("Dashboard starting")
 
 connectHA()
+
+/* ── UI Elements ── */
+const configBtn = document.getElementById("configBtn")
+const settingsPopup = document.getElementById("settingsPopup") as any
+
+configBtn?.addEventListener("click", () => {
+    settingsPopup?.open()
+})
 
 /* ── Theme toggle ── */
 

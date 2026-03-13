@@ -70,3 +70,22 @@ export function subscribeUser(callback: Function) {
     userListeners.push(callback)
     if (currentUser) callback(currentUser)
 }
+
+/* ── Active Person Tracking (Sticky Identity) ── */
+let activePerson: string = localStorage.getItem("ha_active_person") || "person.sebastian"
+const personListeners: ((personId: string) => void)[] = []
+
+export function getActivePerson() {
+    return activePerson
+}
+
+export function setActivePerson(personId: string) {
+    activePerson = personId
+    localStorage.setItem("ha_active_person", personId)
+    personListeners.forEach(cb => cb(personId))
+}
+
+export function subscribeActivePerson(callback: (personId: string) => void) {
+    personListeners.push(callback)
+    callback(activePerson)
+}

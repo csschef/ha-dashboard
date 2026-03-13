@@ -1,4 +1,4 @@
-import { getEntity, subscribeEntity, subscribeUser } from "../store/entity-store"
+import { getEntity, subscribeEntity, subscribeUser, subscribeActivePerson } from "../store/entity-store"
 import { callService } from "../services/ha-service"
 import type { HAEntity } from "../types/homeassistant"
 import type { HAUser } from "../store/entity-store"
@@ -11,12 +11,13 @@ class WeatherCard extends HTMLElement {
     private hourlySensor = "sensor.vader_prognos_timme"
     private dailySensor = "sensor.vader_prognos_daglig"
     
-    // NEW: Person tracking
+    // Person tracking
     private personEntity = "person.sebastian"
     private lastCoords: string = ""
     private localWeather: any = null
     private localLocation: string = "Hem"
     private isExpanded: boolean = false
+    private viewMode: 'hourly' | 'daily' = (localStorage.getItem("weather_view_mode") as 'hourly' | 'daily') || 'daily'
 
     // IMAGE MAPPING to match your folder structure
     private imageMap: Record<string, string> = {
@@ -60,44 +61,35 @@ class WeatherCard extends HTMLElement {
     }
 
     connectedCallback() {
-        // 1. Subscribe to HA sensors for fallback/home data
-        const coreSensors = [this.weatherEntity, this.currentSensor, this.stateSensor, this.toggleEntity, this.hourlySensor, this.dailySensor]
+        // 1. Subscribe to basic weather sensors
+        const coreSensors = [this.weatherEntity, this.currentSensor, this.stateSensor, this.hourlySensor, this.dailySensor]
         coreSensors.forEach(id => {
             subscribeEntity(id, () => this.handleUpdate())
         })
 
-        // 2. Subscribe to current user to detect who is logged in
-        subscribeUser((user: HAUser) => {
-            if (user && user.name) {
-                const name = user.name.toLowerCase()
-                let newPerson = "person.sebastian" // Default
-                if (name.includes("sara")) newPerson = "person.sara"
-                else if (name.includes("sebastian") || name.includes("sebbe")) newPerson = "person.sebastian"
-                
-                if (newPerson !== this.personEntity) {
-                    this.personEntity = newPerson
-                    console.log("Weather location now tracking:", this.personEntity)
-                }
-            }
-            // Ensure we subscribe to the person entity (old or new)
-            subscribeEntity(this.personEntity, () => this.handleUpdate())
+        // 2. Subscribe to BOTH persons for coordinates
+        subscribeEntity("person.sebastian", () => this.handleUpdate())
+        subscribeEntity("person.sara", () => this.handleUpdate())
+
+        // 3. THE "MAGIC" PART: Subscribe to the active person from the store
+        subscribeActivePerson((personId) => {
+            this.personEntity = personId
+            console.log("Weather location now tracking:", this.personEntity)
             this.handleUpdate()
         })
         
-        // 3. Refresh location when app comes back into focus (unlocking phone)
+        // 4. Update when coming back into focus
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === "visible") {
                 this.handleUpdate()
             }
         })
 
-        // 4. Click to toggle expansion
+        // 5. Expand toggle
         this.addEventListener("click", () => {
             this.isExpanded = !this.isExpanded;
             this.render();
         });
-
-        this.handleUpdate()
     }
 
     private handleUpdate() {
@@ -156,10 +148,10 @@ class WeatherCard extends HTMLElement {
         }
     }
 
-    private setToggle(state: "on" | "off") {
-        callService("input_boolean", state === "on" ? "turn_on" : "turn_off", {
-            entity_id: this.toggleEntity
-        })
+    private toggleView(mode: 'hourly' | 'daily') {
+        this.viewMode = mode
+        localStorage.setItem("weather_view_mode", mode)
+        this.render()
     }
 
     render() {
@@ -173,7 +165,7 @@ class WeatherCard extends HTMLElement {
 
         if (!weather || !current) return
 
-        const isDaily = toggle?.state === "off"
+        const isDaily = this.viewMode === 'daily'
         const isNight = sun?.state === "below_horizon"
 
         // Localized vs Fixed Logic
@@ -478,11 +470,11 @@ class WeatherCard extends HTMLElement {
         // Re-attach listeners after innerHTML replacement
         this.shadowRoot!.getElementById("btn-hourly")?.addEventListener("click", (e) => {
             e.stopPropagation();
-            this.setToggle("on");
+            this.toggleView("hourly");
         })
         this.shadowRoot!.getElementById("btn-daily")?.addEventListener("click", (e) => {
             e.stopPropagation();
-            this.setToggle("off");
+            this.toggleView("daily");
         })
     }
 
