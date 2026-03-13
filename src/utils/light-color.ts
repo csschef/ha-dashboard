@@ -89,33 +89,50 @@ export function getCardColor(entity: HAEntity): { r: number; g: number; b: numbe
     // colour capability that just hasn't been reported yet.
     const COLOR_MODES = ["color_temp", "xy", "rgb", "rgbw", "rgbww", "hs"]
 
-    // For group entities, check the ACTIVE children rather than the group's own
-    // supported_color_modes (which aggregates ALL children, even inactive ones).
+    // For group entities, check the children to decide if we should wait for color data
+    // or fall back to the "orange" ON/OFF color.
     const childIds: string[] | undefined = attr.entity_id
     if (childIds && childIds.length > 0) {
-        let anyActiveChildHasColor = false
+        let anyPotentialChildHasColor = false
+        let allChildrenOff = true
+
         for (const childId of childIds) {
             const child = getEntity(childId)
-            if (!child || child.state !== "on") continue
-            const childModes: string[] = child.attributes?.supported_color_modes || []
+            const childModes: string[] = child?.attributes?.supported_color_modes || []
             if (childModes.some((m: string) => COLOR_MODES.includes(m))) {
-                anyActiveChildHasColor = true
-                break
+                anyPotentialChildHasColor = true
+            }
+            if (child && child.state === "on") {
+                allChildrenOff = false
             }
         }
-        // If no active child supports colour, use the warm fallback.
-        // If any active child does, wait for HA to push the real colour data.
-        if (anyActiveChildHasColor) return null
+
+        // If it's a mixed/color group and we just turned it ON (optimistic, children still OFF)
+        // then stay neutral/white while we wait for the color data to arrive.
+        if (anyPotentialChildHasColor && allChildrenOff) return null
+
+        // If it's a mixed/color group and we are settled (some children ON), but 
+        // haven't found a mired/rgb yet, continue checking.
+        if (anyPotentialChildHasColor) {
+            // Check if any of the ACTUALLY ON children support color.
+            // If they do, we should wait for their HA attributes.
+            const anyActiveChildHasColor = childIds.some(id => {
+                const c = getEntity(id)
+                if (c?.state !== "on") return false
+                return (c.attributes?.supported_color_modes || []).some((m: string) => COLOR_MODES.includes(m))
+            })
+            if (anyActiveChildHasColor) return null
+        }
     } else {
         // Individual light — check its own supported_color_modes
         const supportedModes: string[] = attr.supported_color_modes || []
         if (supportedModes.some((m: string) => COLOR_MODES.includes(m))) {
-            return null  // colour-capable light — wait for real HA data
+            return null  // color-capable light — wait for real HA data
         }
     }
 
-    // Truly on/off-only light or group with only on/off children active.
-    // 2700 K ≈ 370 mireds → t ≈ 0.626 → warm amber-white on the gradient.
+    // Truly on/off-only light or simple on/off group.
+    // 2700 K ≈ 370 mireds → t ≈ 0.626 → warm amber/orange area on the gradient.
     const FALLBACK_MIRED = 1_000_000 / 2700
     const minMF = 153
     const maxMF = 500

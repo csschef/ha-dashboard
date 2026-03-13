@@ -131,7 +131,6 @@ room-divider {
     /* Visual emphasis while sliding like a modal sheet */
     border-top: 1px solid var(--border-color);
     border-radius: 20px 20px 0 0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
     /* Subtly detach it from the background */
 
     transform: translateY(100vh);

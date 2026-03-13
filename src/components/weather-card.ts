@@ -178,6 +178,7 @@ class WeatherCard extends HTMLElement {
 
         // Localized vs Fixed Logic
         let temp: number
+        let feelsLike: number | null = null
         let condition: string
         let locationName: string
 
@@ -185,10 +186,29 @@ class WeatherCard extends HTMLElement {
             const current = this.localWeather.properties.timeseries[0].data.instant.details
             const symbol = this.localWeather.properties.timeseries[0].data.next_1_hours.summary.symbol_code
             temp = Math.round(current.air_temperature)
+            
+            // If MET compact doesn't have it, calculate a simple heat index / wind chill approximation
+            let app = current.apparent_temperature
+            if (app == null) {
+                const ws = current.wind_speed || 0
+                const rh = current.relative_humidity || 50
+                if (temp <= 10) {
+                    // Simple wind chill for cold
+                    app = 13.12 + 0.6215 * temp - 11.37 * Math.pow(ws, 0.16) + 0.3965 * temp * Math.pow(ws, 0.16)
+                } else if (temp >= 26) {
+                    // Simple heat index for warm
+                    app = temp + 0.5 * (temp + 61 + (temp - 68) * 1.2 + rh * 0.094)
+                } else {
+                    app = temp
+                }
+            }
+            feelsLike = Math.round(app)
             condition = this.getMetState(symbol)
             locationName = this.localLocation
         } else {
             temp = Math.round(Number(weather.attributes.temperature || 0))
+            const app = weather.attributes.apparent_temperature
+            feelsLike = app != null ? Math.round(app) : temp
             condition = current.state
             locationName = "Lindsdal"
         }
@@ -289,8 +309,7 @@ class WeatherCard extends HTMLElement {
                 .unit {
                     font-size: 32px;
                     font-weight: 500;
-                    margin-top: 4px;
-                    opacity: 0.5;
+                    margin-top: -12px;
                 }
                 .meta {
                     display: flex;
@@ -421,6 +440,7 @@ class WeatherCard extends HTMLElement {
                         ${this.localWeather ? `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:1px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>` : ''}
                         ${locationName}
                     </div>
+                    ${feelsLike !== null ? `<div class="location" style="font-size:12px;opacity:0.6">Känns som ${feelsLike}°</div>` : ''}
                 </div>
 
                 <div class="weather-icon-large">
