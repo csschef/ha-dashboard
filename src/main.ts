@@ -31,6 +31,8 @@ import { callService } from "./services/ha-service"
                 --mdc-typography-body2-font-size: 0.875rem !important;
                 --paper-font-body1_-_font-size: 1rem !important;
                 --paper-font-body2_-_font-size: 0.875rem !important;
+                --ha-room-divider-font-size: 0.6875rem !important;
+                --ha-room-divider-stats-font-size: 0.75rem !important;
             }
         `
     }

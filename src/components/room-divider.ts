@@ -76,14 +76,14 @@ class RoomDivider extends HTMLElement {
                     color: var(--text-secondary);
                     letter-spacing: 0.01em;
                     text-transform: uppercase;
-                    font-size: 0.6875rem;
+                    font-size: var(--ha-room-divider-font-size, 0.6875rem);
                 }
                 .stats {
                     display: flex;
                     align-items: center;
                     gap: 10px;
                     color: var(--text-secondary);
-                    font-size: 0.75rem;
+                    font-size: var(--ha-room-divider-stats-font-size, 0.75rem);
                     font-weight: 400;
                     opacity: 0.7;
                 }

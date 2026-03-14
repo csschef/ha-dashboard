@@ -62,15 +62,15 @@ body {
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
         --color-bg: #0f0f10;
-        --color-card: #19191b;
+        --color-card: #222225;
         /* Specific inactive standout */
-        --color-card-alt: #131314;
+        --color-card-alt: #1a1a1d;
         --color-overlay: rgba(0, 0, 0, 0.60);
 
         --text-primary: #e8e6e2;
-        --text-secondary: #7a7875;
+        --text-secondary: #999794;
 
-        --border-color: #272628;
+        --border-color: #2e2d30;
         --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
         --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.5);
 
@@ -85,14 +85,14 @@ body {
 /* ── Manual dark override ───────────────────────────────────────────────── */
 [data-theme="dark"] {
     --color-bg: #0f0f10;
-    --color-card: #19191b;
-    --color-card-alt: #131314;
+    --color-card: #222225;
+    --color-card-alt: #1a1a1d;
     --color-overlay: rgba(0, 0, 0, 0.60);
 
     --text-primary: #e8e6e2;
-    --text-secondary: #7a7875;
+    --text-secondary: #999794;
 
-    --border-color: #272628;
+    --border-color: #2e2d30;
     --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
     --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.5);
 
