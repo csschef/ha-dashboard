@@ -82,7 +82,7 @@ class ToggleSwitch extends HTMLElement {
           position: absolute;
           top: 2px;
           left: 2px;
-          transition: transform 0.15s ease;
+          transition: transform 0.15s ease, background 0.15s ease;
           box-shadow:
             0 1px 4px rgba(0,0,0,0.30),
             0 0 0 0.5px rgba(0,0,0,0.10),
@@ -91,6 +91,24 @@ class ToggleSwitch extends HTMLElement {
 
         .switch.checked .knob {
           transform: translateX(14px);
+          background: white;
+        }
+
+        /* In dark mode, the knob should use secondary text color when OFF */
+        @media (prefers-color-scheme: dark) {
+          .switch:not(.checked) .knob {
+            background: var(--text-secondary);
+            box-shadow:
+              0 1px 4px rgba(0,0,0,0.30),
+              0 0 0 0.5px rgba(0,0,0,0.10);
+          }
+        }
+
+        :host-context([data-theme="dark"]) .switch:not(.checked) .knob {
+          background: var(--text-secondary);
+          box-shadow:
+            0 1px 4px rgba(0,0,0,0.30),
+            0 0 0 0.5px rgba(0,0,0,0.10);
         }
       </style>
 
