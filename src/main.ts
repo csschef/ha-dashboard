@@ -206,6 +206,7 @@ function handleRoute() {
 
     // 3. Manage main tab visibility + bottom nav active state
     if (isMainTab) {
+        window.scrollTo({ top: 0, behavior: "instant" })
         views.forEach(v => {
             if (MAIN_TABS.includes(v.id)) {
                 v.classList.toggle("active-tab", v.id === targetId)
