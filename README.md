@@ -19,7 +19,7 @@ Standard HA dashboards are functional but can feel rigid. I wanted full creative
 
 Unlike standard dashboards or generic custom cards, HASP implements several "hardware-aware" innovations:
 
-- **Personalized Weather Map**: Most weather cards are static. Mine detects which device is being used (e.g., my Oneplus 12 vs. another phone) and fetches a decentralized local forecast for that specific GPS spot. It turns the dashboard into a personalized tool for whoever is holding it.
+- **Personalized Weather Map**: Most weather cards are static. Home Assistant doesn't natively support personalized weather maps. Mine detects which device is being used (e.g., my Oneplus 12 vs. another phone) and fetches a decentralized local forecast for that specific GPS spot. It turns the dashboard into a personalized tool for whoever is holding it.
 - **Device Identity**: The dashboard automatically greets the user and adjusts its tracking data based on the hardware it's running on, making it truly multi-user aware.
 - **Decentralized Performance**: I fetch weather and geocoding data directly (bypassing HA's internal proxy limits) to ensure zero loading failures and absolute speed on mobile companion apps.
 
@@ -27,8 +27,12 @@ Unlike standard dashboards or generic custom cards, HASP implements several "har
 
 - **Weather Hero**: High-res custom icons, reverse geocoding for city names, and "feels like" temp math.
 - **Premium TV Remote**: A custom interactive popup with D-pad and haptic-ready controls.
-- **History Visualization**: Real-time sensor history graphs integrated directly into the cards.
+- **Data History & Trends**: Real-time sensor history graphs for temperature and humidity integrated directly into cards. I can instantly see how the house has cooled or warmed over the last 24 hours without leaving the main view.
 - **Adaptive Lighting**: Cards that generate background color gradients based on the current state of light or lightgroups.
+- **Smart Top Bar & Notifications**: 
+  - A dynamic notification system (e.g., "Empty the cat litter box" or "The dishwasher is done" or "Postman has arrived") with interactive action buttons.
+  - A hidden "Tray" that slides down to provide quick toggles for Guest Mode, Sleep Mode, and Theme switching.
+- **Native Bottom Navigation**: A persistent dock for switching between main views (in my case Home, Kitchen, Energy) with smooth icon transitions and active state tracking.
 
 ## Tech Stack
 
