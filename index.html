@@ -10,7 +10,8 @@
         /* Force font size on all devices, especially HA Companion app */
         html, body {
             font-size: 16px !important;
-            -webkit-text-size-adjust: 100% !important;
+            -webkit-text-size-adjust: none !important;
+            text-size-adjust: none !important;
         }
         /* Critical: applied synchronously before Vite JS/CSS loads.
            Keeps subviews off-screen from the very first paint — no FOUC flash. */
@@ -30,6 +31,9 @@
 
     <div class="topbar" id="topTrayContainer">
         <div class="topbar-main">
+            <div class="ha-menu-btn" id="haMenuBtn" title="Meny">
+                <iconify-icon icon="lucide:menu"></iconify-icon>
+            </div>
             <div class="user-info">
                 <user-header></user-header>
             </div>

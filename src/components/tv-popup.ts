@@ -147,7 +147,7 @@ class TvPopup extends HTMLElement {
     padding: 0;
 }
 .remote-power-btn:active { background: #444444; }
-.remote-power-btn i { font-size: 18px; }
+.remote-power-btn i { font-size: 1.125rem; }
 
 /* ── D-PAD ───────────────────────────────────────────── */
 .dpad {
@@ -218,9 +218,9 @@ class TvPopup extends HTMLElement {
     padding: 0;
 }
 .round-btn:active { background: #444444; }
-.round-btn i { font-size: 20px; }
+.round-btn i { font-size: 1.25rem; }
 .round-btn svg { fill: currentColor; }
-.round-btn iconify-icon { font-size: 32px; }
+.round-btn iconify-icon { font-size: 2rem; }
 .round-btn iconify-icon svg { stroke-width: 1.2; }
 .round-btn ha-icon { --mdc-icon-size: 32px; width: 32px; height: 32px; }
 
@@ -285,7 +285,7 @@ class TvPopup extends HTMLElement {
             <svg width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M15 18l-6-6 6-6"/></svg>
         </button>
         <button class="round-btn" data-cmd="HOME">
-            <iconify-icon icon="ph:house" style="font-size:32px;"></iconify-icon>
+            <iconify-icon icon="ph:house" style="font-size:2rem;"></iconify-icon>
         </button>
         
         <button class="round-btn" data-cmd="MEDIA_PLAY_PAUSE">

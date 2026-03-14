@@ -64,7 +64,7 @@ class KitchenView extends HTMLElement {
             :host { display: block; padding: 0 var(--space-md) 140px; color: var(--text-primary); font-family: var(--font-main); }
 
             h2 {
-                font-size: 13px;
+                font-size: 0.8125rem;
                 font-weight: 500;
                 letter-spacing: 0.07em;
                 text-transform: uppercase;
@@ -93,7 +93,7 @@ class KitchenView extends HTMLElement {
                 gap: 12px;
             }
             .day-label {
-                font-size: 12px;
+                font-size: 0.75rem;
                 font-weight: 500;
                 color: var(--text-secondary);
                 letter-spacing: 0.02em;
@@ -103,7 +103,7 @@ class KitchenView extends HTMLElement {
                 background: none;
                 border: none;
                 color: var(--text-primary);
-                font-size: 15px;
+                font-size: 0.9375rem;
                 font-weight: 400;
                 width: 100%;
                 outline: none;
@@ -144,7 +144,7 @@ class KitchenView extends HTMLElement {
                 color: var(--text-secondary);
                 opacity: 0.2;
                 cursor: grab;
-                font-size: 18px;
+                font-size: 1.125rem;
                 flex-shrink: 0;
             }
 
@@ -153,7 +153,7 @@ class KitchenView extends HTMLElement {
                 background: none;
                 border: none;
                 color: var(--text-primary);
-                font-size: 15px;
+                font-size: 0.9375rem;
                 font-weight: 400;
                 outline: none;
                 font-family: var(--font-main);
@@ -179,7 +179,7 @@ class KitchenView extends HTMLElement {
                 align-items: center;
                 gap: 8px;
                 color: var(--text-secondary);
-                font-size: 14px;
+                font-size: 0.875rem;
                 font-weight: 400;
                 cursor: pointer;
                 transition: background 0.15s ease;

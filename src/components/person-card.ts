@@ -218,7 +218,7 @@ class PersonCard extends BaseCard {
                     stroke: var(--text-secondary);
                 }
                 .battery-pill span {
-                    font-size: 11px;
+                    font-size: 0.6875rem;
                     font-weight: 500;
                     color: var(--text-secondary);
                 }
@@ -228,13 +228,13 @@ class PersonCard extends BaseCard {
                     gap: 3px;
                 }
                 .name {
-                    font-size: 16px;
+                    font-size: 1rem;
                     font-weight: 500;
                     letter-spacing: -0.01em;
                     color: var(--text-primary);
                 }
                 .status {
-                    font-size: 12px;
+                    font-size: 0.75rem;
                     color: var(--text-secondary);
                     line-height: 1.4;
                     max-width: 150px;

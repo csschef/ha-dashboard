@@ -6,6 +6,47 @@ import { connectHA } from "./services/ha-client"
 import { subscribeEntity, getEntity } from "./store/entity-store"
 import { callService } from "./services/ha-service"
 
+// ── Font size lockdown ────────────────────────────────────────────────────
+// HA injects its theme CSS into same-origin iframes AFTER our stylesheets
+// load, winning the cascade even against !important. We fight back by:
+// 1. Appending a <style> tag from JS (runs last, always wins stylesheet order)
+// 2. MutationObserver to revert any runtime inline font-size changes on <html>
+;(function lockFontSize() {
+    const ID = "ha-font-lock"
+    const mobile = window.matchMedia("(max-width: 480px)")
+    const base = () => mobile.matches ? "18px" : "16px"
+
+    const applyLock = () => {
+        let el = document.getElementById(ID) as HTMLStyleElement | null
+        if (!el) {
+            el = document.createElement("style") as HTMLStyleElement
+            el.id = ID
+            document.head.appendChild(el)
+        }
+        el.textContent = `
+            html { font-size: ${base()} !important; -webkit-text-size-adjust: none !important; text-size-adjust: none !important; }
+            body { font-size: 1rem !important; font-family: "Inter", system-ui, sans-serif !important; }
+            :root {
+                --mdc-typography-body1-font-size: 1rem !important;
+                --mdc-typography-body2-font-size: 0.875rem !important;
+                --paper-font-body1_-_font-size: 1rem !important;
+                --paper-font-body2_-_font-size: 0.875rem !important;
+            }
+        `
+    }
+
+    applyLock()
+    mobile.addEventListener("change", applyLock)
+
+    // Revert inline style overrides on <html>
+    new MutationObserver(() => {
+        const el = document.documentElement
+        if (el.style.fontSize && el.style.fontSize !== base()) {
+            el.style.fontSize = base()
+        }
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["style"] })
+})()
+
 connectHA()
 
 import "./components/toggle-switch"
@@ -252,11 +293,90 @@ if (document.readyState === "loading") {
 // ── Initial Listeners & UI ──
 const topbarEl = document.getElementById("topTrayContainer")
 topbarEl?.addEventListener("click", (e) => {
+    // Don't open tray when clicking the hamburger button
+    if ((e.target as HTMLElement).closest("#haMenuBtn")) return
     if ((e.target as HTMLElement).closest(".topbar-tray")) return
     const isExpanded = topbarEl.classList.toggle("expanded")
     document.body.style.overflow = isExpanded ? "hidden" : ""
     document.body.classList.toggle("tray-open", isExpanded)
 })
+
+// ── HA Sidebar & Header ──────────────────────────────────────────────────
+// Kiosk-mode approach: use window.top to reach the outer HA frame regardless of iframe depth
+function getHAMain(): Element | null {
+    try {
+        const topDoc = (window.top ?? window.parent ?? window).document
+        const ha = topDoc.querySelector("home-assistant") as any
+        if (!ha) { console.warn("[hasp] home-assistant element not found"); return null }
+        const haMain = ha.shadowRoot?.querySelector("home-assistant-main")
+        if (!haMain) { console.warn("[hasp] home-assistant-main not found in shadowRoot"); return null }
+        return haMain
+    } catch (e) {
+        console.warn("[hasp] getHAMain error:", e)
+        return null
+    }
+}
+
+function toggleHASidebar() {
+    const haMain = getHAMain()
+    if (!haMain) return
+    haMain.dispatchEvent(new CustomEvent("hass-toggle-menu", { bubbles: true, composed: true }))
+}
+
+function hideHAHeader() {
+    let retries = 0
+    const attempt = () => {
+        if (retries++ > 25) return
+        try {
+            const topDoc = (window.top ?? window.parent ?? window).document
+            const ha = topDoc.querySelector("home-assistant") as any
+            if (!ha?.shadowRoot) { setTimeout(attempt, 600); return }
+
+            const haMain    = ha.shadowRoot.querySelector("home-assistant-main") as any
+            if (!haMain?.shadowRoot) { setTimeout(attempt, 600); return }
+
+            // Walk into hui-root's shadow root — this is where .header > .toolbar lives
+            // Note: partial-panel-resolver has NO shadow root — ha-panel-lovelace is a direct child
+            const resolver   = haMain.shadowRoot.querySelector("partial-panel-resolver") as any
+            const lovelace   = resolver?.querySelector("ha-panel-lovelace") as any
+            const huiRoot    = lovelace?.shadowRoot?.querySelector("hui-root") as any
+            const huiShadow = huiRoot?.shadowRoot as ShadowRoot | null
+
+            const inject = (root: ShadowRoot, id: string, css: string) => {
+                if (root.getElementById(id)) return
+                const s = document.createElement("style")
+                s.id = id; s.textContent = css
+                root.appendChild(s)
+                console.log(`[hasp] header CSS injected into ${root.host?.tagName}`)
+            }
+
+            if (huiShadow) {
+                inject(huiShadow, "ha-dash-hide-hdr", `
+                    .header { display: none !important; height: 0 !important; min-height: 0 !important; overflow: hidden !important; }
+                    .toolbar { display: none !important; height: 0 !important; }
+                    #view { padding-top: 0 !important; margin-top: 0 !important; }
+                    hui-view-container { margin-top: 0 !important; padding-top: 0 !important; }
+                `)
+                return  // success, stop retrying
+            }
+
+            // hui-root not ready yet — keep trying
+            setTimeout(attempt, 600)
+        } catch (e) {
+            console.warn("[hasp] hideHAHeader error:", e)
+            setTimeout(attempt, 600)
+        }
+    }
+    attempt()
+}
+
+
+document.getElementById("haMenuBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation()
+    toggleHASidebar()
+})
+
+hideHAHeader()
 
 // Close tray when clicking anywhere outside the topbar
 document.addEventListener("click", (e) => {

@@ -252,13 +252,13 @@ class WeatherCard extends HTMLElement {
                     gap: 2px;
                 }
                 .temp {
-                    font-size: 52px;
+                    font-size: 3.25rem;
                     font-weight: 300;
                     letter-spacing: -3px;
                     line-height: 0.9;
                 }
                 .unit {
-                    font-size: 28px;
+                    font-size: 1.75rem;
                     font-weight: 300;
                     margin-top: -10px;
                 }
@@ -269,7 +269,7 @@ class WeatherCard extends HTMLElement {
                     flex: 1;
                 }
                 .condition {
-                    font-size: 16px;
+                    font-size: 1rem;
                     font-weight: 400;
                     text-transform: capitalize;
                     line-height: 1.2;
@@ -279,7 +279,7 @@ class WeatherCard extends HTMLElement {
                     align-items: center;
                     gap: 4px;
                     margin-top: 2px;
-                    font-size: 14px;
+                    font-size: 0.875rem;
                     color: var(--text-secondary);
                     opacity: 0.8;
                 }
@@ -325,7 +325,7 @@ class WeatherCard extends HTMLElement {
                     background: transparent;
                     color: var(--text-secondary);
                     padding: 8px;
-                    font-size: 13px;
+                    font-size: 0.8125rem;
                     font-weight: 500;
                     border-radius: 8px;
                     cursor: pointer;
@@ -355,11 +355,11 @@ class WeatherCard extends HTMLElement {
                     min-width: 54px;
                     scroll-snap-align: start;
                 }
-                .label { font-size: 12px; color: var(--text-secondary); }
-                .f-temp { font-size: 15px; font-weight: 500; }
+                .label { font-size: 0.75rem; color: var(--text-secondary); }
+                .f-temp { font-size: 0.9375rem; font-weight: 500; }
                 .f-temps { display: flex; gap: 6px; }
                 .f-temp.low { opacity: 0.5; }
-                .precip { font-size: 11px; font-weight: 500; color: var(--text-secondary); opacity: 0.9; }
+                .precip { font-size: 0.6875rem; font-weight: 500; color: var(--text-secondary); opacity: 0.9; }
 
                 .sun-info {
                     display: flex;
@@ -368,7 +368,7 @@ class WeatherCard extends HTMLElement {
                     margin-bottom: 24px;
                     padding-bottom: 20px;
                     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                    font-size: 13px;
+                    font-size: 0.8125rem;
                     color: var(--text-secondary);
                     font-weight: 500;
                 }
@@ -391,15 +391,15 @@ class WeatherCard extends HTMLElement {
                         ${this.localWeather ? `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:1px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>` : ''}
                         ${locationName}
                     </div>
-                    ${feelsLike !== null ? `<div class="location" style="font-size:12px;opacity:0.6">Känns som ${feelsLike}°</div>` : ''}
+                    ${feelsLike !== null ? `<div class="location" style="font-size:0.75rem;opacity:0.6">Känns som ${feelsLike}°</div>` : ''}
 
                     ${this.showDebug ? `
-                        <div style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 4px; margin-top: 8px; font-family: monospace; pointer-events: auto;">
+                        <div style="font-size: 0.625rem; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 4px; margin-top: 8px; font-family: monospace; pointer-events: auto;">
                             ID: ${this.personEntity.split('.')[1]}<br>
                             GPS: ${this.lastCoords || 'NONE'}<br>
                             COND: ${condition}<br>
                             FETCH: ${this.localWeather ? 'OK' : (this.fetchError || 'WAITING')}<br>
-                            <button id="btn-refresh" style="font-size:9px; border:1px solid #fff; background:none; color:#fff; border-radius:4px; padding:2px 4px; margin-top:4px;">Force Reload</button>
+                            <button id="btn-refresh" style="font-size:0.5625rem; border:1px solid #fff; background:none; color:#fff; border-radius:4px; padding:2px 4px; margin-top:4px;">Force Reload</button>
                         </div>
                     ` : ''}
                 </div>
