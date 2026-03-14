@@ -321,7 +321,7 @@ display:none;
 background:var(--color-overlay);
 backdrop-filter:blur(12px);
 -webkit-backdrop-filter:blur(12px);
-z-index:1000;
+z-index:10000;
 opacity: 0;
 transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 pointer-events: none;
@@ -333,7 +333,7 @@ pointer-events: none;
 
 .sheet{
 position:absolute;
-top:32px;
+top: 64px; /* Move below topbar */
 left:50%;
 transform:translate(-50%, 20px);
 opacity: 0;

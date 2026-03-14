@@ -1,10 +1,11 @@
 * {
     -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
 }
 
 html {
     -webkit-text-size-adjust: 100%;
-    font-size: 16px !important; /* Lock base size — HA overrides this to 10px otherwise */
+    font-size: 16px !important;
 }
 
 body {
@@ -14,97 +15,152 @@ body {
     color: var(--text-primary);
     transition: background 0.25s ease, color 0.25s ease;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    font-size: 16px !important; /* Prevent HA stylesheet from shrinking text */
+    overflow-x: hidden;
     line-height: 1.5;
 }
 
-/* ── Top bar ── */
+/* ── Top bar & Tray ── */
 .topbar {
     position: sticky;
     top: 0;
-    z-index: 20;
-    background: var(--color-bg);
+    z-index: 5000;
+    background: var(--color-card);
+    padding: 12px var(--space-md);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: auto;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.topbar-main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-lg) var(--space-md) var(--space-sm);
-    transition: background 0.25s ease;
+    height: 36px;
+    cursor: pointer;
 }
 
-.topbar-title {
-    font-size: 1.5rem;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    flex-grow: 1;
-    text-align: center;
+/* Base tray — Hidden but positioned absolutely */
+.topbar-tray {
+    position: absolute;
+    top: calc(100% - 1px); /* Overlap topbar border to remove seam */
+    left: 0;
+    right: 0;
+    width: 100%; /* Prevents horizontal spill */
+    background: var(--color-card);
+    padding: 0 var(--space-md) 32px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 1000;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    border-bottom: 1px solid var(--border-color);
 }
+
+.topbar.expanded .topbar-tray {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* When a subview is active, block interaction with background layers */
+body.subview-active .topbar,
+body.subview-active .bottom-dock,
+body.subview-active .main-shell {
+    pointer-events: none;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.notification-bell-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+}
+
+@keyframes bell-ring {
+    0%   { transform: rotate(0deg); }
+    10%  { transform: rotate(16deg); }
+    20%  { transform: rotate(-14deg); }
+    30%  { transform: rotate(12deg); }
+    40%  { transform: rotate(-10deg); }
+    50%  { transform: rotate(6deg); }
+    60%  { transform: rotate(-4deg); }
+    70%  { transform: rotate(2deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.notification-bell-box iconify-icon {
+    font-size: 24px;
+    color: var(--text-primary);
+    transition: color 0.3s cubic-bezier(0.4,0,0.2,1);
+    transform-origin: top center;
+}
+
+.notification-bell-box.has-notifs iconify-icon {
+    color: var(--yellow-accent);
+    animation: bell-ring 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -3px;
+    right: -4px;
+    background: var(--color-card);
+    color: var(--text-primary);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 2px;
+    border-radius: 50%;
+    border: 1.5px solid var(--text-primary);
+    font-size: 9px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* ── Tray Sections ── */
+.tray-section { margin-bottom: 24px; margin-top: 24px; }
+.tray-title { font-size: 12px; font-weight: 600; letter-spacing: 0.01em; color: var(--text-secondary); margin-bottom: 10px; }
+.tray-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tray-tile { background: var(--color-card-alt); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+.tray-tile:active { transform: scale(0.95); opacity: 0.8; }
+.tray-tile i,
+.tray-tile iconify-icon { font-size: 18px; color: var(--text-primary); }
+.tray-tile span { font-size: 11px; font-weight: 500; letter-spacing: 0.01em; color: var(--text-secondary); }
+.tray-tile.active { background: var(--accent-muted); border-color: var(--accent); }
+.tray-tile.active i,
+.tray-tile.active iconify-icon { color: var(--accent); }
+.tray-tile.active span { color: var(--accent); }
+
+.notification-list { background: var(--color-card-alt); border-radius: var(--radius-md); border: 1px solid var(--border-color); padding: 8px; min-height: 80px; display: flex; flex-direction: column; }
 
 /* ── Subview header ── */
 .subview-header {
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: 2100;
     background: var(--color-bg);
     display: flex;
     align-items: center;
-    padding: var(--space-lg) var(--space-md) var(--space-sm);
+    padding: 16px 16px 12px; /* Reduced top padding since it's inside fixed view */
     cursor: pointer;
-    transition: background 0.25s ease, opacity 0.15s ease, transform 0.15s ease;
 }
 
-.subview-header:active {
-    opacity: 0.7;
-    transform: scale(0.98);
-}
-
-.subview-title {
-    font-size: 1.5rem;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-}
-
-.back-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: var(--space-sm);
-    padding: 0;
-}
-
-.theme-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border-color);
-    background: var(--color-card);
-    color: var(--text-primary);
-    font-size: 17px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s ease, transform 0.15s ease;
-    box-shadow: var(--shadow-sm);
-    padding: 0;
-}
-
-.theme-btn:hover {
-    background: var(--color-card-alt);
-}
-
-.theme-btn:active {
-    transform: scale(0.92);
-}
+.subview-title { font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; color: var(--text-primary); }
+.back-btn { width: 44px; height: 44px; border-radius: 50%; background: transparent; color: var(--text-primary); display: flex; align-items: center; justify-content: center; margin-right: 8px; cursor: pointer; }
 
 /* ── Card grid ── */
 .dashboard {
@@ -113,41 +169,89 @@ body {
     gap: var(--space-md);
     padding: var(--space-sm) var(--space-md) var(--space-md);
 }
+room-divider { grid-column: 1 / -1; }
 
-room-divider {
-    grid-column: 1 / -1;
+/* ── View & Transitions ── */
+.main-shell {
+    position: relative;
+    padding-bottom: 80px;
 }
 
-/* ── View Transitions ── */
+/* ── View & Transitions ── */
+.main-shell {
+    position: relative;
+    padding-bottom: 80px;
+    min-height: 100vh;
+}
 
-.view:not(#home) {
+.view {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.view.active-tab {
+    display: block;
+    opacity: 1;
+}
+
+/* Subviews slide up from the bottom */
+.view.subview {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: var(--color-bg);
-    z-index: 30;
+    z-index: 8000;
     overflow-y: auto;
-
-    /* Visual emphasis while sliding like a modal sheet */
-    border-top: 1px solid var(--border-color);
-    border-radius: 20px 20px 0 0;
-    /* Subtly detach it from the background */
-
+    opacity: 0;
     transform: translateY(100vh);
-    transition: transform 0.4s cubic-bezier(0.3, 1, 0.3, 1), border-top-color 0.4s ease, border-radius 0.4s ease, box-shadow 0.4s ease;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
     pointer-events: none;
-    padding-bottom: 2rem;
-    /* safe scroll padding */
+    /* NOTE: display stays 'none' from .view, we override it here */
+    display: block;
 }
 
-.view:not(#home).active-subview {
+.view.subview.active-subview {
+    opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
-
-    /* Blend completely flat and flush once engaged */
-    border-top-color: transparent;
-    border-radius: 0;
-    box-shadow: none;
 }
+
+/* ── Bottom Dock ── */
+.bottom-dock {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    /* Semi-transparent so the blur actually renders */
+    background: color-mix(in srgb, var(--color-card) 85%, transparent);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 9000; /* Always on top, even over subviews */
+    transition: transform 0.3s ease;
+}
+
+/* Hide dock when subview is active so it doesn't intercept subview content clicks */
+body.subview-active .bottom-dock {
+    transform: translateY(100%);
+    pointer-events: none;
+}
+
+.nav-item {
+    background: none; border: none; color: var(--text-primary); display: flex; flex-direction: column; align-items: center; gap: 0; padding: 8px; flex: 1; cursor: pointer; transition: color 0.25s ease, opacity 0.25s ease; -webkit-tap-highlight-color: transparent;
+    opacity: 0.3;
+}
+.nav-item iconify-icon { font-size: 22px; }
+.nav-item span { display: none; }
+.nav-item.active { color: var(--text-primary); opacity: 1; }
+
+/* ── Notification Actions ── */
+.notif-actions { display: flex; gap: 10px; margin-top: 14px; }
+.action-btn { background: var(--color-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; }
+.action-btn:active { transform: scale(0.94); background: var(--color-card-alt); }
+.action-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
