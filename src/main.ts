@@ -6,6 +6,47 @@ import { connectHA } from "./services/ha-client"
 import { subscribeEntity, getEntity } from "./store/entity-store"
 import { callService } from "./services/ha-service"
 
+// ── Font size lockdown ────────────────────────────────────────────────────
+// HA injects its theme CSS into same-origin iframes AFTER our stylesheets
+// load, winning the cascade even against !important. We fight back by:
+// 1. Appending a <style> tag from JS (runs last, always wins stylesheet order)
+// 2. MutationObserver to revert any runtime inline font-size changes on <html>
+;(function lockFontSize() {
+    const ID = "ha-font-lock"
+    const mobile = window.matchMedia("(max-width: 480px)")
+    const base = () => mobile.matches ? "18px" : "16px"
+
+    const applyLock = () => {
+        let el = document.getElementById(ID) as HTMLStyleElement | null
+        if (!el) {
+            el = document.createElement("style") as HTMLStyleElement
+            el.id = ID
+            document.head.appendChild(el)
+        }
+        el.textContent = `
+            html { font-size: ${base()} !important; -webkit-text-size-adjust: none !important; text-size-adjust: none !important; }
+            body { font-size: 1rem !important; font-family: "Inter", system-ui, sans-serif !important; }
+            :root {
+                --mdc-typography-body1-font-size: 1rem !important;
+                --mdc-typography-body2-font-size: 0.875rem !important;
+                --paper-font-body1_-_font-size: 1rem !important;
+                --paper-font-body2_-_font-size: 0.875rem !important;
+            }
+        `
+    }
+
+    applyLock()
+    mobile.addEventListener("change", applyLock)
+
+    // Revert inline style overrides on <html>
+    new MutationObserver(() => {
+        const el = document.documentElement
+        if (el.style.fontSize && el.style.fontSize !== base()) {
+            el.style.fontSize = base()
+        }
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["style"] })
+})()
+
 connectHA()
 
 import "./components/toggle-switch"

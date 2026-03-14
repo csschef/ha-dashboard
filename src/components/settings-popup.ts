@@ -60,8 +60,8 @@ class SettingsPopup extends HTMLElement {
                 box-shadow: 0 20px 40px rgba(0,0,0,0.4);
                 border: 1px solid rgba(255,255,255,0.1);
             }
-            h2 { margin: 0 0 8px 0; font-size: 20px; color: #fff; text-align: center; }
-            p { margin: 0 0 24px 0; font-size: 14px; color: #8e8e93; text-align: center; }
+            h2 { margin: 0 0 8px 0; font-size: 1.25rem; color: #fff; text-align: center; }
+            p { margin: 0 0 24px 0; font-size: 0.875rem; color: #8e8e93; text-align: center; }
             
             .options { display: flex; flex-direction: column; gap: 12px; }
             
@@ -83,7 +83,7 @@ class SettingsPopup extends HTMLElement {
             .option:active { transform: scale(0.98); }
             
             .name { flex: 1; font-weight: 500; color: #fff; }
-            .check { color: #007aff; font-size: 20px; display: none; }
+            .check { color: #007aff; font-size: 1.25rem; display: none; }
             .option.active .check { display: block; }
 
             .debug-info {
@@ -92,7 +92,7 @@ class SettingsPopup extends HTMLElement {
                 background: rgba(0,0,0,0.2);
                 border-radius: 12px;
                 font-family: monospace;
-                font-size: 11px;
+                font-size: 0.6875rem;
                 color: #8e8e93;
             }
             .debug-title { font-weight: bold; margin-bottom: 4px; color: #aaa; }

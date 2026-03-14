@@ -336,7 +336,7 @@ class HistoryPopup extends HTMLElement {
             <div class="title">Laddar...</div>
             <div class="subtitle" style="display:none;"></div>
         </div>
-        <div class="close"><iconify-icon icon="lucide:x" style="font-size:14px;"></iconify-icon></div>
+        <div class="close"><iconify-icon icon="lucide:x" style="font-size:0.875rem;"></iconify-icon></div>
     </div>
     <div class="current-value">--</div>
     <div class="graph-container"></div>

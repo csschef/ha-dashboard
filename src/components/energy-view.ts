@@ -35,8 +35,8 @@ class EnergyView extends HTMLElement {
         
         if (!entity || !this.prices.length) {
             this.shadowRoot!.innerHTML = `
-                <div style="padding: 60px var(--space-md); text-align: center; color: var(--text-secondary); font-size: 13px; opacity: 0.5;">
-                    <iconify-icon icon="lucide:zap" style="font-size: 32px; display: block; margin-bottom: 12px; opacity: 0.4;"></iconify-icon>
+                <div style="padding: 60px var(--space-md); text-align: center; color: var(--text-secondary); font-size: 0.8125rem; opacity: 0.5;">
+                    <iconify-icon icon="lucide:zap" style="font-size: 2rem; display: block; margin-bottom: 12px; opacity: 0.4;"></iconify-icon>
                     Hämtar prisdata…
                 </div>
             `
@@ -54,7 +54,7 @@ class EnergyView extends HTMLElement {
             :host { display: block; padding: 0 var(--space-md) 120px; color: var(--text-primary); font-family: var(--font-main); }
 
             h2 {
-                font-size: 13px;
+                font-size: 0.8125rem;
                 font-weight: 500;
                 letter-spacing: 0.07em;
                 text-transform: uppercase;
@@ -81,13 +81,13 @@ class EnergyView extends HTMLElement {
                 gap: 4px;
             }
             .price-val {
-                font-size: 52px;
+                font-size: 3.25rem;
                 font-weight: 300;
                 letter-spacing: -3px;
                 line-height: 1;
                 color: ${color};
             }
-            .price-unit { font-size: 14px; color: var(--text-secondary); font-weight: 400; margin-bottom: 6px; }
+            .price-unit { font-size: 0.875rem; color: var(--text-secondary); font-weight: 400; margin-bottom: 6px; }
 
             .status-badge {
                 background: var(--color-card-alt);
@@ -95,7 +95,7 @@ class EnergyView extends HTMLElement {
                 padding: 5px 14px;
                 border-radius: var(--radius-sm);
                 font-weight: 500;
-                font-size: 12px;
+                font-size: 0.75rem;
                 border: 1px solid var(--border-color);
             }
 
@@ -115,14 +115,14 @@ class EnergyView extends HTMLElement {
                 border: 1px solid var(--border-color);
             }
             .grid-label {
-                font-size: 11px;
+                font-size: 0.6875rem;
                 font-weight: 500;
                 color: var(--text-secondary);
                 text-transform: uppercase;
                 letter-spacing: 0.06em;
                 opacity: 0.7;
             }
-            .grid-val { font-size: 18px; font-weight: 400; letter-spacing: -0.02em; }
+            .grid-val { font-size: 1.125rem; font-weight: 400; letter-spacing: -0.02em; }
 
             /* ── SVG Chart ── */
             .chart-box {
@@ -144,7 +144,7 @@ class EnergyView extends HTMLElement {
                 <div class="price-unit">öre / kWh</div>
             </div>
             <div class="status-badge">${label}</div>
-            <div style="font-size: 12px; color: var(--text-secondary); opacity: 0.6;">SE3 · nuvarande timme</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.6;">SE3 · nuvarande timme</div>
         </div>
 
         <div class="price-grid">
@@ -184,7 +184,7 @@ class EnergyView extends HTMLElement {
                     `
                 }).join('')}
             </svg>
-            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: var(--text-secondary); opacity: 0.5; font-weight: 500;">
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.625rem; color: var(--text-secondary); opacity: 0.5; font-weight: 500;">
                 <span>00:00</span>
                 <span>Nu</span>
                 <span>23:00</span>

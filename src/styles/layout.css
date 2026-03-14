@@ -4,8 +4,8 @@
 }
 
 html {
-    -webkit-text-size-adjust: 100%;
-    font-size: 16px !important;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
 }
 
 body {
@@ -113,7 +113,7 @@ body.tray-open .bottom-dock {
     margin-right: 4px;
 }
 .ha-menu-btn iconify-icon {
-    font-size: 20px;
+    font-size: 1.25rem;
     color: var(--text-primary);
     opacity: 0.85;
     transform: scaleX(1.08);
@@ -148,7 +148,7 @@ body.tray-open .bottom-dock {
     display: flex;
 }
 .topbar-icon-btn iconify-icon {
-    font-size: 22px;
+    font-size: 1.375rem;
     transition: color 0.2s ease;
 }
 
@@ -173,7 +173,7 @@ body.tray-open .bottom-dock {
 }
 
 .notification-bell-box iconify-icon {
-    font-size: 22px;
+    font-size: 1.375rem;
     color: var(--text-secondary);
     transition: color 0.3s ease;
     transform-origin: top center;
@@ -195,7 +195,7 @@ body.tray-open .bottom-dock {
     padding: 0 2px;
     border-radius: 50%;
     border: 1.5px solid var(--text-primary);
-    font-size: 9px;
+    font-size: 0.5625rem;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -206,7 +206,7 @@ body.tray-open .bottom-dock {
 /* ── Tray Sections ──────────────────────────────────────────── */
 .tray-section { margin-bottom: 24px; margin-top: 20px; }
 .tray-title {
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -229,8 +229,8 @@ body.tray-open .bottom-dock {
 }
 .tray-tile:active { transform: scale(0.94); }
 .tray-tile i,
-.tray-tile iconify-icon { font-size: 17px; color: var(--text-secondary); transition: color 0.2s ease; }
-.tray-tile span { font-size: 11px; font-weight: 400; color: var(--text-secondary); }
+.tray-tile iconify-icon { font-size: 1.0625rem; color: var(--text-secondary); transition: color 0.2s ease; }
+.tray-tile span { font-size: 0.6875rem; font-weight: 400; color: var(--text-secondary); }
 .tray-tile.active { background: var(--accent-muted); border-color: var(--accent); }
 .tray-tile.active i,
 .tray-tile.active iconify-icon { color: var(--accent); }
@@ -299,7 +299,7 @@ body.tray-open .bottom-dock {
     flex-shrink: 0;
 }
 .back-btn iconify-icon {
-    font-size: 16px;
+    font-size: 1rem;
     color: var(--text-secondary);
 }
 .back-btn iconify-icon svg {
@@ -391,7 +391,7 @@ body.subview-active .bottom-dock {
     -webkit-tap-highlight-color: transparent;
     opacity: 0.35;
 }
-.nav-item iconify-icon { font-size: 22px; }
+.nav-item iconify-icon { font-size: 1.375rem; }
 .nav-item span { display: none; }
 .nav-item.active { opacity: 1; }
 
@@ -403,7 +403,7 @@ body.subview-active .bottom-dock {
     color: var(--text-primary);
     padding: 10px 14px;
     border-radius: var(--radius-sm);
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;

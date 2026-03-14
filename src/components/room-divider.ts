@@ -72,19 +72,18 @@ class RoomDivider extends HTMLElement {
                     padding: var(--space-md) var(--space-md) 0 var(--space-md);
                 }
                 .title {
-                    font-size: 0.95rem;
                     font-weight: 500;
                     color: var(--text-secondary);
                     letter-spacing: 0.01em;
                     text-transform: uppercase;
-                    font-size: 11px;
+                    font-size: 0.6875rem;
                 }
                 .stats {
                     display: flex;
                     align-items: center;
                     gap: 10px;
                     color: var(--text-secondary);
-                    font-size: 12px;
+                    font-size: 0.75rem;
                     font-weight: 400;
                     opacity: 0.7;
                 }

@@ -58,15 +58,15 @@ tv-card { grid-column: span 1; display: block; }
 }
 
 .weather-hero .temp {
-    font-size: 48px;
+    font-size: 3rem;
     font-weight: 300;
     letter-spacing: -3px;
     color: var(--text-primary);
 }
 
 .weather-info { display: flex; flex-direction: column; gap: 2px; }
-.weather-info .condition { font-size: 15px; font-weight: 400; color: var(--text-primary); }
-.weather-info .location { font-size: 13px; color: var(--text-secondary); }
+.weather-info .condition { font-size: 0.9375rem; font-weight: 400; color: var(--text-primary); }
+.weather-info .location { font-size: 0.8125rem; color: var(--text-secondary); }
 
 /* ── Forecast ─────────────────────────────────────────────── */
 .forecast-scroll {
@@ -88,8 +88,8 @@ tv-card { grid-column: span 1; display: block; }
     scroll-snap-align: start;
 }
 
-.f-label { font-size: 12px; color: var(--text-secondary); }
-.f-temp { font-size: 14px; font-weight: 400; color: var(--text-primary); }
+.f-label { font-size: 0.75rem; color: var(--text-secondary); }
+.f-temp { font-size: 0.875rem; font-weight: 400; color: var(--text-primary); }
 .f-temps { display: flex; gap: 6px; }
 .f-temp.muted { color: var(--text-secondary); opacity: 0.5; }
-.f-precip { font-size: 10px; font-weight: 500; color: var(--accent); opacity: 0.7; }
+.f-precip { font-size: 0.625rem; font-weight: 500; color: var(--accent); opacity: 0.7; }

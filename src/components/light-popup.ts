@@ -381,7 +381,7 @@ align-items: center;
 justify-content: center;
 cursor:pointer;
 color: var(--text-secondary);
-font-size: 16px;
+font-size: 1rem;
 line-height: 1;
 transition: background 0.15s ease;
 }
@@ -407,17 +407,16 @@ align-items:center;
 }
 
 label{
-font-size:13px;
 font-weight:400;
 color:var(--text-secondary);
 letter-spacing: 0.01em;
 text-transform: uppercase;
-font-size: 11px;
+font-size: 0.6875rem;
 opacity: 0.7;
 }
 
 .value{
-font-size:13px;
+font-size: 0.8125rem;
 font-weight: 500;
 color:var(--text-primary);
 }
@@ -511,7 +510,7 @@ pointer-events:none;
 
 <div class="header">
 <div class="title"></div>
-<div class="close"><iconify-icon icon="lucide:x" style="font-size:14px;"></iconify-icon></div>
+<div class="close"><iconify-icon icon="lucide:x" style="font-size:0.875rem;"></iconify-icon></div>
 </div>
 
 <div class="controls"></div>

@@ -38,7 +38,7 @@ export class BaseCard extends HTMLElement {
 
         .title {
           font-weight: 400;
-          font-size: 15px;
+          font-size: 0.9375rem;
           letter-spacing: -0.01em;
           color: var(--card-text-primary, var(--text-primary));
           transition: color 0.3s ease;
@@ -53,7 +53,7 @@ export class BaseCard extends HTMLElement {
 
         .subtitle {
           font-weight: 400;
-          font-size: 12px;
+          font-size: 0.75rem;
           color: var(--card-text-secondary, var(--text-secondary));
           transition: color 0.3s ease;
           opacity: 0.8;

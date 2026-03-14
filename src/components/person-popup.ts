@@ -268,7 +268,7 @@ class PersonPopup extends HTMLElement {
     justify-content: center;
     cursor: pointer;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 0.875rem;
     transition: background 0.15s ease;
     flex-shrink: 0;
 }
@@ -289,7 +289,7 @@ class PersonPopup extends HTMLElement {
             <div class="title">Person</div>
             <div class="subtitle">Position</div>
         </div>
-        <div class="close"><iconify-icon icon="lucide:x" style="font-size:14px;"></iconify-icon></div>
+        <div class="close"><iconify-icon icon="lucide:x" style="font-size:0.875rem;"></iconify-icon></div>
     </div>
     <div id="map"></div>
 </div>
