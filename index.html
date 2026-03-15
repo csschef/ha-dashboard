@@ -133,6 +133,13 @@
                 power-script="script.android_tv_on_off"
                 soundbar="media_player.lg_soundbar">
             </tv-card>
+            <pc-card 
+                name="Laptop" 
+                entity="input_boolean.laptop_av_pa" 
+                power-service="button.press"
+                power-entity="button.bass_laptop_shutdown"
+                no-wol>
+            </pc-card>
 
             <!-- Kök -->
             <room-divider title="Kök" temp="sensor.vardagsrum_temperatursensor_temperature"
@@ -154,6 +161,20 @@
                 motion="binary_sensor.hobbyrum_rorelsesensor_skrivbord_occupancy">
             </room-divider>
             <light-card name="Lampor" entity="light.hobbyrum" navigate="#hobbyrum"></light-card>
+            <pc-card 
+                name="RGBDreamz" 
+                entity="input_boolean.rgbdreamz_startar_stanger_av_sig" 
+                binary-entity="binary_sensor.rgbdreamz_rgbdreamz_av_pa"
+                steam-entity="sensor.steam_76561197983523031"
+                power-service="script.rgbdreamz_on_off">
+            </pc-card>
+            <pc-card 
+                name="Dator" 
+                entity="input_boolean.dator_av_pa" 
+                binary-entity="binary_sensor.bassdator_bassdator"
+                steam-entity="sensor.steam_current_game"
+                power-service="script.bassdator_on_off">
+            </pc-card>
 
         </div>
     </div>

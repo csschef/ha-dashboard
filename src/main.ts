@@ -66,6 +66,7 @@ import "./components/settings-popup"
 import "./components/meals-view"
 import "./components/energy-view"
 import "./components/todo-popup"
+import "./components/pc-card"
 
 /* ── TRAY & NOTIFICATIONS ── */
 
