@@ -29,7 +29,7 @@ body {
     background: color-mix(in srgb, var(--color-card) 80%, transparent);
     backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(24px) saturate(150%);
-    padding: 12px var(--space-md);
+    padding: 10px var(--space-md);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     height: auto;
     border-bottom: 1px solid var(--border-color);
@@ -40,7 +40,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 36px;
+    height: 32px;
     cursor: pointer;
     z-index: 50; /* Above tray background */
 }
@@ -55,7 +55,7 @@ body {
     background: color-mix(in srgb, var(--color-card) 80%, transparent);
     backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(24px) saturate(150%);
-    padding: 60px var(--space-md) 32px; /* 60px = topbar height offset */
+    padding: 52px var(--space-md) 32px; /* 52px = topbar height offset */
     opacity: 0;
     transform: translateY(-100%);
     transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
