@@ -137,13 +137,13 @@ class MealsView extends HTMLElement {
             :host { display: block; padding: 0 var(--space-md) 140px; color: var(--text-primary); font-family: var(--font-main); }
 
             h2 {
-                font-size: 0.8125rem;
+                font-size: 0.6875rem;
                 font-weight: 500;
-                letter-spacing: 0.07em;
-                text-transform: uppercase;
                 color: var(--text-secondary);
+                letter-spacing: 0.01em;
+                text-transform: uppercase;
                 margin: 28px 0 12px;
-                opacity: 0.7;
+                opacity: 1;
             }
 
             /* ── Meals ── */

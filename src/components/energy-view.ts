@@ -87,7 +87,15 @@ class EnergyView extends HTMLElement {
         this.shadowRoot!.innerHTML = `
         <style>
             :host { display: block; padding: 0 var(--space-md) 140px; color: var(--text-primary); font-family: var(--font-main); }
-            h2 { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin: 32px 0 16px; opacity: 0.6; }
+            h2 {
+                font-size: 0.6875rem;
+                font-weight: 500;
+                color: var(--text-secondary);
+                letter-spacing: 0.01em;
+                text-transform: uppercase;
+                margin: 32px 0 16px;
+                opacity: 1;
+            }
 
             .hero-card {
                 background: var(--color-card);
