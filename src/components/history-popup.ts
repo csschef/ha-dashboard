@@ -163,7 +163,7 @@ class HistoryPopup extends HTMLElement {
         const pathData = lineData + ` L${width},${height} L${textMargin},${height} Z`
 
         const isTemp = this.entity?.attributes.unit_of_measurement === "°C"
-        const strokeColor = isTemp ? "#ff9c3a" : "#5ea8ff"
+        const strokeColor = isTemp ? "#ff9c3a" : "var(--accent)"
 
         const midY = (yMin + yMax) / 2
 
@@ -227,7 +227,7 @@ class HistoryPopup extends HTMLElement {
 
 .sheet {
     position: absolute;
-    top: 60px;
+    top: 52px;
     left: 50%;
     transform: translate(-50%, 16px);
     opacity: 0;
