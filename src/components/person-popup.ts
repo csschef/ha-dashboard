@@ -61,7 +61,7 @@ class PersonPopup extends HTMLElement {
 
         this.update()
         this.fetchAndRenderHistory()
-        
+
         setTimeout(() => {
             if (this.leafletLoaded) {
                 this.initMap()
@@ -85,7 +85,7 @@ class PersonPopup extends HTMLElement {
         const h = Math.floor(seconds / 3600)
         const m = Math.floor((seconds % 3600) / 60)
         const d = Math.floor(h / 24)
-        
+
         if (d > 0) {
             const dText = d === 1 ? 'dag' : 'dagar'
             const hText = (h % 24) === 1 ? 'timme' : 'timmar'
@@ -103,7 +103,7 @@ class PersonPopup extends HTMLElement {
     private async fetchAndRenderHistory() {
         const historyContainer = this.shadow.querySelector(".history-content") as HTMLElement
         if (!historyContainer) return
-        
+
         historyContainer.innerHTML = '<div class="no-history">Hämtar historik...</div>'
 
         const history = await fetchHistory(this.entityId, 24)
@@ -115,19 +115,19 @@ class PersonPopup extends HTMLElement {
         const now = new Date()
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
         const segments: any[] = []
-        
+
         for (let i = 0; i < history.length; i++) {
             const state = history[i]
             const nextState = history[i + 1]
-            
+
             const startTime = this.getStateDate(state)
             const endTime = nextState ? this.getStateDate(nextState) : now.getTime()
-            
+
             if (endTime < startOfToday) continue
-            
+
             const actualStart = Math.max(startTime, startOfToday)
             const durationSec = Math.round((endTime - actualStart) / 1000)
-            
+
             if (durationSec < 10) continue
 
             segments.push({
@@ -199,7 +199,7 @@ class PersonPopup extends HTMLElement {
             zoomControl: false,
             attributionControl: false,
             maxZoom: 18
-        }).setView([lat, lon], 17) 
+        }).setView([lat, lon], 17)
 
         // Google Hybrid: Satellite + High Quality White Labels
         window.L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
@@ -246,7 +246,7 @@ class PersonPopup extends HTMLElement {
                 const marker = window.L.marker([pLat, pLon]).addTo(this.map)
                 this.markers.set(p.entity_id, marker)
                 this.updateMarkerIcon(p.entity_id)
-                
+
                 // If this is our main person, bring to front
                 if (p.entity_id === this.entityId) {
                     marker.setZIndexOffset(1000)
@@ -289,9 +289,9 @@ class PersonPopup extends HTMLElement {
 
         const title = this.shadow.querySelector(".title") as HTMLElement
         const subtitle = this.shadow.querySelector(".subtitle") as HTMLElement
-        
+
         title.textContent = name
-        
+
         let rawState = this.entity.state
         let state = rawState
 
@@ -304,7 +304,7 @@ class PersonPopup extends HTMLElement {
         } else {
             state = state.charAt(0).toUpperCase() + state.slice(1)
         }
-        
+
         const lastChanged = this.getStateDate(this.entity)
         const duration = this.formatDuration(Math.round((new Date().getTime() - lastChanged) / 1000))
         subtitle.textContent = `${state} i ${duration}.`
