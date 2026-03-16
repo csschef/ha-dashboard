@@ -124,113 +124,93 @@ body.tray-open .bottom-dock {
     width: 36px;
     height: 36px;
     cursor: pointer;
+    position: relative;
     flex-shrink: 0;
-    margin-right: 4px;
 }
 .ha-menu-btn iconify-icon {
-    font-size: 1.25rem;
+    font-size: 1.375rem;
     color: var(--text-primary);
-    opacity: 0.85;
-    transform: scaleX(1.08);
-    display: block;
-    transition: opacity 0.15s ease;
+    opacity: 0.8;
+    transition: all 0.2s ease;
 }
-.ha-menu-btn iconify-icon svg { stroke-width: 1.5; }
-.ha-menu-btn:active iconify-icon { opacity: 1; }
+.ha-menu-btn:active iconify-icon { opacity: 1; transform: scale(0.9); }
 
-.notification-bell-box {
-    position: relative;
-    display: none !important;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    cursor: pointer;
-    margin-left: 8px;
-}
-
-.notification-bell-box.has-notifs {
-    display: flex !important;
-}
-
-/* Guest mode & Sleep mode indicator buttons — hidden until active */
-.topbar-icon-btn {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    cursor: default;
+.system-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 11px;
+    height: 11px;
+    background: var(--yellow-accent);
     border-radius: 50%;
-    margin-left: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
-.topbar-icon-btn.guest-active,
-.topbar-icon-btn.sleep-active {
+
+/* ── Status Bar (Mobile Style) ─────────────────────────────── */
+.status-pill {
     display: flex;
-    background: var(--accent-muted);
-    transform: scale(0.9);
-    animation: icon-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    align-items: center;
+    gap: 8px;
+    height: 24px;
+    margin-right: 12px;
+    padding: 0;
+    transition: opacity 0.3s ease;
 }
 
-@keyframes icon-pop {
-    to { transform: scale(1); }
+.status-icon {
+    display: none;
+    width: 20px;
+    height: 24px;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: var(--text-secondary);
+    opacity: 0.8;
 }
 
-.topbar-icon-btn iconify-icon {
-    font-size: 1.15rem;
-    transition: color 0.2s ease;
+.status-icon.active {
+    display: flex;
 }
 
-/* Guest mode active — Soft tinted 'Steel Blue' feel */
-.topbar-icon-btn.guest-active iconify-icon,
-.topbar-icon-btn.sleep-active iconify-icon {
-    color: var(--accent);
-    opacity: 1;
+.status-icon iconify-icon {
+    font-size: 1rem; /* Smaller, like systematic icons */
+}
+
+/* Notification Badge - Small, crisp and functional */
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    left: 17px;
+    background: var(--yellow-accent);
+    color: #2e3440;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 15px;
+    height: 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 0;
+    z-index: 10;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
 @keyframes bell-ring {
     0%   { transform: rotate(0deg); }
-    10%  { transform: rotate(16deg); }
-    20%  { transform: rotate(-14deg); }
-    30%  { transform: rotate(12deg); }
+    20%  { transform: rotate(10deg); }
     40%  { transform: rotate(-10deg); }
-    50%  { transform: rotate(6deg); }
-    60%  { transform: rotate(-4deg); }
-    70%  { transform: rotate(2deg); }
+    60%  { transform: rotate(5deg); }
+    80%  { transform: rotate(-5deg); }
     100% { transform: rotate(0deg); }
 }
 
-.notification-bell-box iconify-icon {
-    font-size: 1.375rem;
-    color: var(--text-secondary);
-    transition: color 0.3s ease;
-    transform-origin: top center;
-}
-.notification-bell-box iconify-icon::part(svg) { stroke-width: 1.6; }
-
-.notification-bell-box.has-notifs iconify-icon {
-    color: var(--yellow-accent);
-    animation: bell-ring 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+.status-icon#notification-bell-box.active iconify-icon {
+    animation: bell-ring 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
-.notification-badge {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    background: var(--color-danger);
-    color: white;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 10px;
-    font-size: 0.625rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    z-index: 10;
-}
+
 
 /* ── Tray Sections ──────────────────────────────────────────── */
 .tray-section { margin-bottom: 24px; margin-top: 20px; }

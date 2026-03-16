@@ -3,7 +3,7 @@ import "./styles/layout.css"
 import "./styles/cards.css"
 
 import { connectHA } from "./services/ha-client"
-import { subscribeEntity, getEntity } from "./store/entity-store"
+import { subscribeEntity, getEntity, getEntitiesByDomain } from "./store/entity-store"
 import { callService } from "./services/ha-service"
 
 // ── Font size lockdown ────────────────────────────────────────────────────
@@ -162,11 +162,25 @@ const notifications = [
     }
 };
 
+function updateSystemBadge() {
+    const badge = document.getElementById("systemBadge");
+    if (!badge) return;
+
+    // 1. Check HACS
+    const hacs = getEntity("sensor.hacs");
+    const hasHacsUpdates = hacs && parseInt(hacs.state) > 0;
+
+    // 2. Check all update.* entities
+    const updateEntities = getEntitiesByDomain("update");
+    const hasSystemUpdates = updateEntities.some(e => e.state === "on");
+
+    badge.style.display = (hasHacsUpdates || hasSystemUpdates) ? "block" : "none";
+}
+
 function updateNotifications() {
     const list = document.getElementById("notificationList")
     const badge = document.getElementById("notifBadge")
-    const bellBox = document.querySelector(".notification-bell-box")
-    const bellIcon = bellBox?.querySelector("iconify-icon") as any
+    const bellIconBox = document.getElementById("notification-bell-box")
 
     if (!list) return
     
@@ -180,14 +194,8 @@ function updateNotifications() {
         badge.style.display = active.length > 0 ? "flex" : "none"
     }
 
-    if (bellBox) {
-        if (active.length > 0) {
-            bellBox.classList.add("has-notifs")
-            if (bellIcon) bellIcon.icon = "tabler:bell-filled"
-        } else {
-            bellBox.classList.remove("has-notifs")
-            if (bellIcon) bellIcon.icon = "lucide:bell"
-        }
+    if (bellIconBox) {
+        bellIconBox.classList.toggle("active", active.length > 0);
     }
 
     if (active.length === 0) {
@@ -223,6 +231,12 @@ function updateNotifications() {
 }
 
 notifications.forEach(n => subscribeEntity(n.id, updateNotifications))
+
+// Monitor HACS and Generic Updates
+subscribeEntity("sensor.hacs", updateSystemBadge);
+// Since update entities are dynamic, we check periodically or when major states change
+setInterval(updateSystemBadge, 30000); 
+setTimeout(updateSystemBadge, 2000); // Initial check
 
 // ── Global Navigation ──
 const MAIN_TABS = ["home", "meals", "energy"]
@@ -443,13 +457,13 @@ function initHAModeButton(
     // Keep icon in sync with HA entity state
     subscribeEntity(entityId, (entity: any) => {
         const on = entity?.state === "on"
-        btn.classList.toggle(activeClass, on)
+        btn.classList.toggle("active", on)
         if (icon) icon.icon = on ? iconFill : iconOutline
     })
 }
 
-initHAModeButton("guestModeBtn", "input_boolean.gast",    "guest-active", "ph:users", "ph:users-duotone")
-initHAModeButton("sleepModeBtn", "input_boolean.sovlage", "sleep-active", "ph:moon",  "ph:moon-duotone")
+initHAModeButton("guestModeBtn", "input_boolean.gast",    "active", "ph:users", "ph:users")
+initHAModeButton("sleepModeBtn", "input_boolean.sovlage", "active", "ph:moon",  "ph:moon")
 
 document.addEventListener("show-history", (e: any) => {
     const pop = document.getElementById("historyPopup") as any
