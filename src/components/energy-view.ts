@@ -129,7 +129,7 @@ class EnergyView extends HTMLElement {
             }
             .hero-card::before {
                 content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-                background: radial-gradient(circle at center, var(--status-color, var(--accent)) 0%, transparent 70%); pointer-events: none; opacity: 0.15;
+                background: radial-gradient(circle at center, var(--status-color, var(--accent)) 0%, transparent 70%); pointer-events: none; opacity: var(--energy-glow-opacity, 0.15);
             }
             .price-val { font-size: 4rem; font-weight: 200; letter-spacing: -3px; line-height: 1; z-index: 1; }
             .price-unit { font-size: 0.875rem; color: var(--text-secondary); opacity: 0.6; font-weight: 400; z-index: 1; }
