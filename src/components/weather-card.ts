@@ -164,6 +164,10 @@ class WeatherCard extends HTMLElement {
             locationName = "Lindsdal"
         }
 
+        if (isNight && (condition || "").toLowerCase().trim() === "sunny") {
+            condition = "clear-night"
+        }
+
         const conditionLabel = this.translateCondition(condition)
 
         const formatTime = (iso: string) => {
@@ -585,7 +589,7 @@ class WeatherCard extends HTMLElement {
     private translateCondition(condition: string): string {
         const dict: Record<string, string> = {
             "sunny": "Soligt",
-            "clear-night": "Klart",
+            "clear-night": "Stjärnklart",
             "cloudy": "Molnigt",
             "fog": "Dimma",
             "hail": "Hagel",
