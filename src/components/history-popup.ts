@@ -172,8 +172,8 @@ class HistoryPopup extends HTMLElement {
         this.shadow.innerHTML = `
 <style>
 :host {
-    position: fixed; inset: 0; display: none; background: rgba(0,0,0,0.3);
-    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    position: fixed; inset: 0; display: none; background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     z-index: 10000; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
 }
 :host(.active) { opacity: 1; pointer-events: auto; }
@@ -181,7 +181,10 @@ class HistoryPopup extends HTMLElement {
 .sheet {
     position: absolute; top: 52px; left: 50%; transform: translate(-50%, 16px);
     opacity: 0; width: calc(100% - 32px); max-width: 480px;
-    background: var(--color-card); border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--color-card) 85%, transparent);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border-radius: var(--radius-xl);
     padding: 24px; border: 1px solid var(--border-color);
     box-shadow: 0 24px 64px rgba(0,0,0,0.2); box-sizing: border-box;
     max-height: calc(100dvh - 76px); overflow-y: auto;

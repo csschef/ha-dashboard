@@ -96,9 +96,9 @@ class TvPopup extends HTMLElement {
     position: fixed;
     inset: 0;
     display: none;
-    background: var(--color-overlay);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 10000;
     opacity: 0;
     transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -117,7 +117,9 @@ class TvPopup extends HTMLElement {
     width: 260px;
     max-height: 92vh;
     overflow-y: auto;
-    background: #e5e5e7;
+    background: color-mix(in srgb, #e5e5e7 85%, transparent);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
     border-radius: 46px;
     padding: 20px;
     display: flex;

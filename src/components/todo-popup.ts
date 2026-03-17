@@ -90,8 +90,8 @@ class TodoPopup extends HTMLElement {
                 inset: 0;
                 display: none;
                 background: rgba(0, 0, 0, 0.4);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
                 z-index: 11000;
                 opacity: 0;
                 transition: opacity 0.3s ease;
@@ -110,7 +110,9 @@ class TodoPopup extends HTMLElement {
                 opacity: 0;
                 width: calc(100% - 32px);
                 max-width: 400px;
-                background: var(--color-card);
+                background: color-mix(in srgb, var(--color-card) 85%, transparent);
+                backdrop-filter: blur(24px) saturate(150%);
+                -webkit-backdrop-filter: blur(24px) saturate(150%);
                 border-radius: var(--radius-xl);
                 padding: 24px;
                 border: 1px solid var(--border-color);

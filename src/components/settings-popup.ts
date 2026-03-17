@@ -48,8 +48,9 @@ class SettingsPopup extends HTMLElement {
             .backdrop {
                 position: fixed;
                 inset: 0;
-                background: rgba(0,0,0,0.7);
-                backdrop-filter: blur(10px);
+                background: rgba(0,0,0,0.4);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
                 z-index: 9000;
                 display: flex;
                 align-items: center;
@@ -58,7 +59,9 @@ class SettingsPopup extends HTMLElement {
                 animation: fadeIn 0.3s ease;
             }
             .content {
-                background: #1c1c1e;
+                background: color-mix(in srgb, #1c1c1e 85%, transparent);
+                backdrop-filter: blur(24px) saturate(150%);
+                -webkit-backdrop-filter: blur(24px) saturate(150%);
                 width: 100%;
                 max-width: 340px;
                 border-radius: 28px;
