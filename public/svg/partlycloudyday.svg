@@ -9,8 +9,8 @@
 
     <!-- Cloud gradient -->
     <linearGradient id="cloudGradient" x1="140" y1="95" x2="20" y2="0" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#c8cfd8"/>
-      <stop offset="100%" stop-color="#f0f3f7"/>
+      <stop offset="0%" stop-color="#edf0f4"/>
+      <stop offset="100%" stop-color="#ffffff"/>
     </linearGradient>
   </defs>
 
