@@ -225,14 +225,14 @@ const notifications = [
     {
         id: "counter.kattlada",
         msg: "Dags att tömma kattlådan",
-        image: "/img/cat2.png",
+        image: "img/cat2.png",
         type: "counter",
         check: (state: any) => parseInt(state?.state) > 3
     },
     {
         id: "counter.kattlada_2",
         msg: "Töm kattlådan i källaren",
-        image: "/img/cat2.png",
+        image: "img/cat2.png",
         type: "counter",
         check: (state: any) => parseInt(state?.state) > 3
     },

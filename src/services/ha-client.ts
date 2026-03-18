@@ -10,7 +10,7 @@ export const HA_URL = (port >= 5173 && port <= 5179)
     ? rawUrl 
     : window.location.origin
 
-const HA_TOKEN = import.meta.env.VITE_HA_TOKEN
+export const HA_TOKEN = import.meta.env.VITE_HA_TOKEN
 
 let socket: WebSocket | null = null
 let messageId = 1
