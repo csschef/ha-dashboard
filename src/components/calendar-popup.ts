@@ -554,20 +554,8 @@ class CalendarPopup extends HTMLElement {
         // Stop clicks on sheet from bubbling to host
         root.getElementById("mainSheet")?.addEventListener("click", e => e.stopPropagation())
 
-        root.getElementById("mainClose")?.addEventListener("click", () => {
-            this.isOpen = false; this.editingEvent = null
-            this.classList.remove("active")
-            if (window.history.state?.type === "popup" && window.history.state?.id === "calendarPopup")
-                window.history.back()
-            this.render()
-        })
-        root.getElementById("cancelBtn")?.addEventListener("click", () => {
-            this.isOpen = false; this.editingEvent = null
-            this.classList.remove("active")
-            if (window.history.state?.type === "popup" && window.history.state?.id === "calendarPopup")
-                window.history.back()
-            this.render()
-        })
+        root.getElementById("mainClose")?.addEventListener("click", () => this.close())
+        root.getElementById("cancelBtn")?.addEventListener("click", () => this.close())
         root.getElementById("saveBtn")?.addEventListener("click", () => this.handleSave())
 
         root.querySelectorAll(".chip").forEach(chip =>
