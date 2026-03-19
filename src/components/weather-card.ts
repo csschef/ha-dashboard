@@ -2,6 +2,7 @@ import { getEntity, subscribeEntity, subscribeUser, getActivePerson, setActivePe
 import { callService } from "../services/ha-service"
 import type { HAEntity } from "../types/homeassistant"
 import type { HAUser } from "../store/entity-store"
+import "./svg-icon"
 
 class WeatherCard extends HTMLElement {
     private weatherEntity = "weather.smhi_home"
@@ -21,24 +22,24 @@ class WeatherCard extends HTMLElement {
 
     private imageMap: Record<string, string> = {
         // ── Dina SVG-ikoner ──────────────────────────────────
-        "sunny":             "sun.svg",
-        "clear-night":       "clearnight.svg",
-        "cloudy":            "cloudy.svg",
-        "fog":               "foggyday.svg",
-        "fog_night":         "foggynight.svg",
-        "hail":              "hail.svg",
-        "lightning":         "thunder.svg",
-        "lightning-rainy":   "thunderandrain.svg",
-        "partlycloudy":      "partlycloudyday.svg",
+        "sunny": "sun.svg",
+        "clear-night": "clearnight.svg",
+        "cloudy": "cloudy.svg",
+        "fog": "foggyday.svg",
+        "fog_night": "foggynight.svg",
+        "hail": "hail.svg",
+        "lightning": "thunder.svg",
+        "lightning-rainy": "thunderandrain.svg",
+        "partlycloudy": "partlycloudyday.svg",
         "partlycloudy_night": "partlycloudynight.svg",
-        "rainy":             "rainy.svg",
-        "snowy":             "snowy.svg",
-        "snowy-rainy":       "snowyrainy.svg",
+        "rainy": "rainy.svg",
+        "snowy": "snowy.svg",
+        "snowy-rainy": "snowyrainy.svg",
         // ── Fallbacks (ingen unik ikon) ──────────────────────
-        "pouring":           "rainy.svg",
-        "windy":             "cloudy.svg",
-        "windy-variant":     "cloudy.svg",
-        "exceptional":       "thunder.svg"
+        "pouring": "rainy.svg",
+        "windy": "cloudy.svg",
+        "windy-variant": "cloudy.svg",
+        "exceptional": "thunder.svg"
     }
 
     constructor() {
@@ -75,10 +76,10 @@ class WeatherCard extends HTMLElement {
             }
         })
 
-        // 5. Expand toggle
+        // 5. Expand toggle - Use attribute to preserve animations by avoiding full re-render
         this.addEventListener("click", () => {
             this.isExpanded = !this.isExpanded;
-            this.render();
+            this.toggleAttribute("expanded", this.isExpanded);
         });
     }
 
@@ -100,11 +101,11 @@ class WeatherCard extends HTMLElement {
             if (geoRes.ok) {
                 const geoData = await geoRes.json();
                 let location = geoData.locality || geoData.city || "Okänd";
-                
+
                 // Premium cleanup
                 location = location.replace(/ stadsdelsområde$/i, "").replace(/ kommun$/i, "");
                 this.localLocation = location;
-                
+
                 // Hard override for home
                 const distToHome = Math.sqrt(Math.pow(lat - 56.726, 2) + Math.pow(lon - 16.326, 2));
                 if (distToHome < 0.01) this.localLocation = "Lindsdal";
@@ -112,17 +113,17 @@ class WeatherCard extends HTMLElement {
 
             // 2. Get Weather via Open-Meteo (Zero restrictions / Zero blocks)
             const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,weather_code&hourly=temperature_2m,weather_code,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&wind_speed_unit=ms&timezone=auto`)
-            
+
             if (!weatherRes.ok) throw new Error(`Weather error ${weatherRes.status}`);
-            
+
             this.localWeather = await weatherRes.json();
             this.setAttribute("loaded", "");
             this.fetchError = "";
         } catch (e: any) {
             console.error("Weather fetch failed:", e);
-            this.fetchError = "Anslutningsfel"; 
+            this.fetchError = "Anslutningsfel";
         }
-        
+
         this.render()
     }
 
@@ -175,220 +176,39 @@ class WeatherCard extends HTMLElement {
             return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
 
-        this.shadowRoot!.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                    background: var(--color-card);
-                    border-radius: var(--radius-md);
-                    padding: var(--space-md);
-                    border: 1px solid var(--border-color);
-                    color: var(--text-primary);
-                    opacity: 0;
-                    transition: opacity 0.4s ease-out, background 0.3s ease;
-                    position: relative;
-                    overflow: hidden;
-                    cursor: pointer;
-                }
-
-                /* ── Sky Theme for Light Mode ── */
-                @media (prefers-color-scheme: light) {
-                    :host:not([data-theme="dark"]) {
-                        background: linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%);
-                        color: #ffffff;
-                        border-color: rgba(255, 255, 255, 0.3);
-                    }
-                    :host:not([data-theme="dark"]) .label,
-                    :host:not([data-theme="dark"]) .location,
-                    :host:not([data-theme="dark"]) .unit,
-                    :host:not([data-theme="dark"]) .f-temp.low,
-                    :host:not([data-theme="dark"]) .precip,
-                    :host:not([data-theme="dark"]) .sun-info {
-                        color: rgba(255, 255, 255, 0.8) !important;
-                    }
-                    :host:not([data-theme="dark"]) .tabs {
-                        background: rgba(255, 255, 255, 0.2);
-                        backdrop-filter: blur(4px);
-                    }
-                    :host:not([data-theme="dark"]) .tab {
-                        color: rgba(255, 255, 255, 0.7);
-                    }
-                    :host:not([data-theme="dark"]) .tab.active {
-                        background: #ffffff;
-                        color: #0088cc;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                    }
-                }
-
-                /* Manual Light override */
-                :host-context([data-theme="light"]) {
-                    background: linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%);
-                    color: #ffffff;
-                    border-color: rgba(255, 255, 255, 0.3);
-                }
-                :host-context([data-theme="light"]) .label,
-                :host-context([data-theme="light"]) .location,
-                :host-context([data-theme="light"]) .unit,
-                :host-context([data-theme="light"]) .f-temp.low,
-                :host-context([data-theme="light"]) .precip,
-                :host-context([data-theme="light"]) .sun-info {
-                    color: rgba(255, 255, 255, 0.8) !important;
-                }
-                :host-context([data-theme="light"]) .tabs {
-                    background: rgba(255, 255, 255, 0.2);
-                    backdrop-filter: blur(4px);
-                }
-                :host-context([data-theme="light"]) .tab {
-                    color: rgba(255, 255, 255, 0.7);
-                }
-                :host-context([data-theme="light"]) .tab.active {
-                    background: #ffffff;
-                    color: #0088cc;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                }
-
-                :host([loaded]) {
-                    opacity: 1;
-                }
-                .hero {
-                    display: flex;
-                    align-items: center;
-                    gap: 16px;
-                }
-                .temp-group {
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 2px;
-                }
-                .temp {
-                    font-size: 3.25rem;
-                    font-weight: 300;
-                    letter-spacing: -3px;
-                    line-height: 0.9;
-                }
-                .unit {
-                    font-size: 1.75rem;
-                    font-weight: 300;
-                    margin-top: -10px;
-                }
-                .meta {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    flex: 1;
-                }
-                .condition {
-                    font-size: 1rem;
-                    font-weight: 400;
-                    text-transform: capitalize;
-                    line-height: 1.2;
-                }
-                .location {
-                    display: flex;
-                    align-items: center;
-                    gap: 4px;
-                    margin-top: 2px;
-                    font-size: 0.875rem;
-                    color: var(--text-secondary);
-                    opacity: 0.8;
-                }
-                .weather-icon-large {
-                    color: var(--accent);
-                }
-                
-                :host-context([data-theme="light"]) .weather-icon-large,
-                @media (prefers-color-scheme: light) {
-                    :host:not([data-theme="dark"]) .weather-icon-large {
-                        color: #ffffff;
-                    }
-                }
-
-                /* ── Expandable Section ── */
-                .expander {
-                    display: grid;
-                    grid-template-rows: 0fr;
-                    transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-                :host([expanded]) .expander,
-                .expander.expanded {
-                    grid-template-rows: 1fr;
-                }
-                .expander-content {
-                    overflow: hidden;
-                }
-
-                .content-inner {
-                    padding-top: 24px;
-                }
-
-                .tabs {
-                    display: flex;
-                    background: var(--color-card-alt);
-                    padding: 4px;
-                    border-radius: 12px;
-                    margin-bottom: 20px;
-                }
-                .tab {
-                    flex: 1;
-                    border: none;
-                    background: transparent;
-                    color: var(--text-secondary);
-                    padding: 8px;
-                    font-size: 0.8125rem;
-                    font-weight: 500;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    user-select: none;
-                }
-                .tab.active {
-                    background: var(--color-card);
-                    color: var(--text-primary);
-                }
-
-                .scroll {
-                    display: flex;
-                    gap: 20px;
-                    overflow-x: auto;
-                    padding-bottom: 10px;
-                    scroll-snap-type: x mandatory;
-                    scrollbar-width: none;
-                }
-                .scroll::-webkit-scrollbar { display: none; }
-
-                .item {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 6px;
-                    min-width: 54px;
-                    scroll-snap-align: start;
-                }
-                .label { font-size: 0.75rem; color: var(--text-secondary); }
-                .f-temp { font-size: 0.9375rem; font-weight: 500; }
-                .f-temps { display: flex; gap: 6px; }
-                .f-temp.low { opacity: 0.5; }
-                .precip { font-size: 0.6875rem; font-weight: 500; color: var(--text-secondary); opacity: 0.9; }
-
-                .sun-info {
-                    display: flex;
-                    justify-content: center;
-                    gap: 32px;
-                    margin-bottom: 24px;
-                    padding-bottom: 20px;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                    font-size: 0.8125rem;
-                    color: var(--text-secondary);
-                    font-weight: 500;
-                }
-                .sun-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-            </style>
+        // Surgical rendering: Only build the structure once
+        if (!this.shadowRoot!.querySelector(".hero")) {
+            this.shadowRoot!.innerHTML = `
+                <style>${this.getStyles()}</style>
+                <div class="hero" id="weatherHero"></div>
+                <div class="expander">
+                    <div class="expander-content">
+                        <div class="content-inner">
+                            <div class="sun-info" id="sun-info"></div>
+                            <div class="tabs">
+                                <button class="tab" id="btn-hourly">Timvis</button>
+                                <button class="tab" id="btn-daily">Dygn</button>
+                            </div>
+                            <div class="scroll" id="forecast-scroll"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            <div class="hero" id="weatherHero">
+            // Events attached only once
+            this.shadowRoot!.getElementById("btn-hourly")?.addEventListener("click", (e) => { e.stopPropagation(); this.toggleView("hourly"); });
+            this.shadowRoot!.getElementById("btn-daily")?.addEventListener("click", (e) => { e.stopPropagation(); this.toggleView("daily"); });
+        }
+
+        // 1. Update Expander state via attribute
+        this.toggleAttribute("expanded", this.isExpanded);
+
+        // 2. Update Hero Content (only replace if condition/night changed to preserve animation)
+        const hero = this.shadowRoot!.getElementById("weatherHero")!;
+        const heroStateKey = `${condition}-${isNight}-${this.showDebug}`;
+        
+        if (hero.getAttribute("data-state") !== heroStateKey) {
+            hero.innerHTML = `
                 <div class="temp-group">
                     <span class="temp">${temp}</span>
                     <span class="unit">°</span>
@@ -416,56 +236,127 @@ class WeatherCard extends HTMLElement {
                 <div class="weather-icon-large">
                     ${this.getWeatherIcon(condition, 64, isNight)}
                 </div>
+            `;
+            hero.setAttribute("data-state", heroStateKey);
+
+            // Re-attach hero listeners (only if hero content was replaced)
+            hero.querySelector("#locationArea")?.addEventListener("dblclick", (e) => { e.stopPropagation(); this.showDebug = !this.showDebug; this.render(); });
+            hero.querySelector("#btn-refresh")?.addEventListener("click", (e) => { e.stopPropagation(); this.lastCoords = ""; this.handleUpdate(); });
+        } else {
+            // Just update text content to be safe
+            const tempEl = hero.querySelector('.temp');
+            if (tempEl) tempEl.textContent = String(temp);
+            const condEl = hero.querySelector('.condition');
+            if (condEl) condEl.textContent = conditionLabel;
+        }
+
+        // 3. Update expander content
+        const sunInfo = this.shadowRoot!.getElementById("sun-info")!;
+        sunInfo.innerHTML = `
+            <div class="sun-item">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="overflow:visible"><path d="M12 11V3.5"/><path d="m9 6.5 3-3 3 3"/><path d="M18 20a6 6 0 0 0 -12 0"/><path d="M2 22h20"/></svg>
+                Soluppgång ${formatTime(sun?.attributes.next_rising)}
             </div>
-
-            <div class="expander ${this.isExpanded ? 'expanded' : ''}">
-                <div class="expander-content">
-                    <div class="content-inner">
-                        <div class="sun-info">
-                            <div class="sun-item">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="overflow:visible"><path d="M12 11V3.5"/><path d="m9 6.5 3-3 3 3"/><path d="M18 20a6 6 0 0 0 -12 0"/><path d="M2 22h20"/></svg>
-                                Soluppgång ${formatTime(sun?.attributes.next_rising)}
-                            </div>
-                            <div class="sun-item">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="overflow:visible"><path d="M12 3.5v7.5"/><path d="m15 8-3 3-3-3"/><path d="M18 20a6 6 0 0 0 -12 0"/><path d="M2 22h20"/></svg>
-                                Solnedgång ${formatTime(sun?.attributes.next_setting)}
-                            </div>
-                        </div>
-
-                        <div class="tabs">
-                            <button class="tab ${!isDaily ? 'active' : ''}" id="btn-hourly">Timvis</button>
-                            <button class="tab ${isDaily ? 'active' : ''}" id="btn-daily">Dygn</button>
-                        </div>
-
-                        <div class="scroll">
-                            ${isDaily ? this.renderDaily(daily) : this.renderHourly(hourly)}
-                        </div>
-                    </div>
-                </div>
+            <div class="sun-item">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="overflow:visible"><path d="M12 3.5v7.5"/><path d="m15 8-3 3-3-3"/><path d="M18 20a6 6 0 0 0 -12 0"/><path d="M2 22h20"/></svg>
+                Solnedgång ${formatTime(sun?.attributes.next_setting)}
             </div>
-        `
+        `;
 
-        // Re-attach listeners
-        this.shadowRoot!.getElementById("locationArea")?.addEventListener("dblclick", (e) => {
-            e.stopPropagation();
-            this.showDebug = !this.showDebug;
-            this.render();
-        });
+        const bHourly = this.shadowRoot!.getElementById("btn-hourly")!;
+        const bDaily = this.shadowRoot!.getElementById("btn-daily")!;
+        if (isDaily) { bDaily.classList.add('active'); bHourly.classList.remove('active'); }
+        else         { bHourly.classList.add('active'); bDaily.classList.remove('active'); }
 
-        this.shadowRoot!.getElementById("btn-refresh")?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.lastCoords = "";
-            this.handleUpdate();
-        });
+        const scroll = this.shadowRoot!.getElementById("forecast-scroll")!;
+        scroll.innerHTML = isDaily ? this.renderDaily(daily) : this.renderHourly(hourly);
+    }
 
-        this.shadowRoot!.getElementById("btn-hourly")?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.toggleView("hourly");
-        })
-        this.shadowRoot!.getElementById("btn-daily")?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.toggleView("daily");
-        })
+    private getStyles() {
+        return `
+            :host {
+                display: block;
+                background: var(--color-card);
+                border-radius: var(--radius-md);
+                padding: var(--space-md);
+                border: 1px solid var(--border-color);
+                color: var(--text-primary);
+                opacity: 0;
+                transition: opacity 0.4s ease-out, background 0.3s ease;
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
+            }
+            :host([loaded]) { opacity: 1; }
+
+            /* Overlay for smooth gradient transition */
+            :host::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                opacity: 0;
+                transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 0;
+                pointer-events: none;
+            }
+            :host([expanded])::after { opacity: 1; }
+
+            .hero, .expander { position: relative; z-index: 1; }
+
+            .hero { display: flex; align-items: center; gap: 16px; }
+            .temp-group { display: flex; align-items: flex-start; gap: 2px; }
+            .temp { font-size: 3.25rem; font-weight: 300; letter-spacing: -3px; line-height: 0.9; }
+            .unit { font-size: 1.75rem; font-weight: 300; margin-top: -10px; }
+            .meta { display: flex; flex-direction: column; justify-content: center; flex: 1; }
+            .condition { font-size: 1rem; font-weight: 400; text-transform: capitalize; line-height: 1.2; }
+            .location { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 0.875rem; color: var(--text-secondary); opacity: 0.8; }
+            .weather-icon-large { color: var(--accent); }
+
+            :host-context([data-theme="light"]) .weather-icon-large,
+            @media (prefers-color-scheme: light) {
+                :host:not([data-theme="dark"]) .weather-icon-large { color: #ffffff; }
+            }
+
+            .expander { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+            :host([expanded]) .expander { grid-template-rows: 1fr; }
+            .expander-content { overflow: hidden; }
+            .content-inner { padding-top: 24px; }
+
+            .tabs { display: flex; background: rgba(255,255,255,0.1); padding: 4px; border-radius: 12px; margin-bottom: 20px; }
+            :host:not([expanded]) .tabs { background: var(--color-card-alt); }
+
+            .tab { flex: 1; border: none; background: transparent; color: var(--text-secondary); padding: 8px; font-size: 0.8125rem; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.2s; user-select: none; }
+            .tab.active { background: var(--color-card); color: var(--text-primary); }
+
+            .scroll { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+            .scroll::-webkit-scrollbar { display: none; }
+
+            .item { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 54px; scroll-snap-align: start; }
+            .label { font-size: 0.75rem; color: var(--text-secondary); }
+            .f-temp { font-size: 0.9375rem; font-weight: 500; }
+            .f-temps { display: flex; gap: 6px; }
+            .f-temp.low { opacity: 0.5; }
+            .precip { font-size: 0.6875rem; font-weight: 500; color: var(--text-secondary); opacity: 0.9; }
+
+            .sun-info { display: flex; justify-content: center; gap: 32px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.8125rem; color: var(--text-secondary); font-weight: 500; }
+            .sun-item { display: flex; align-items: center; gap: 8px; }
+
+            /* ── Theme Overrides ── */
+            @media (prefers-color-scheme: light) {
+                :host:not([data-theme="dark"]) { background: rgba(51,140,210,1); color: #ffffff; border-color: rgba(255, 255, 255, 0.3); }
+                :host:not([data-theme="dark"])::after { background: linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%); }
+                :host:not([data-theme="dark"]) .label, :host:not([data-theme="dark"]) .location, :host:not([data-theme="dark"]) .unit, :host:not([data-theme="dark"]) .f-temp.low, :host:not([data-theme="dark"]) .precip, :host:not([data-theme="dark"]) .sun-info { color: rgba(255, 255, 255, 0.8) !important; }
+                :host:not([data-theme="dark"]) .tabs { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); }
+                :host:not([data-theme="dark"]) .tab { color: rgba(255, 255, 255, 0.7); }
+                :host:not([data-theme="dark"]) .tab.active { background: #ffffff; color: #0088cc; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+            }
+            :host-context([data-theme="light"]) { background: rgba(51,140,210,1); color: #ffffff; border-color: rgba(255, 255, 255, 0.3); }
+            :host-context([data-theme="light"])::after { background: linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%); }
+            :host-context([data-theme="light"]) .label, :host-context([data-theme="light"]) .location, :host-context([data-theme="light"]) .unit, :host-context([data-theme="light"]) .f-temp.low, :host-context([data-theme="light"]) .precip, :host-context([data-theme="light"]) .sun-info { color: rgba(255, 255, 255, 0.8) !important; }
+            :host-context([data-theme="light"]) .tabs { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); }
+            :host-context([data-theme="light"]) .tab { color: rgba(255, 255, 255, 0.7); }
+            :host-context([data-theme="light"]) .tab.active { background: #ffffff; color: #0088cc; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        `;
     }
 
     private renderHourly(entity?: HAEntity) {
@@ -477,14 +368,14 @@ class WeatherCard extends HTMLElement {
                 const d = new Date(timeStr);
                 return { d, i };
             }).filter((item: any) => item.d.getTime() > now)
-              .slice(0, 24)
-              .map((item: any) => {
-                const i = item.i;
-                const d = item.d;
-                const cond = this.getWmoState(h.weather_code[i]);
-                const isNight = d.getHours() > 20 || d.getHours() < 6;
-                
-                return `
+                .slice(0, 24)
+                .map((item: any) => {
+                    const i = item.i;
+                    const d = item.d;
+                    const cond = this.getWmoState(h.weather_code[i]);
+                    const isNight = d.getHours() > 20 || d.getHours() < 6;
+
+                    return `
                     <div class="item">
                         <span class="label">${d.getHours()}:00</span>
                         ${this.getWeatherIcon(cond, 24, isNight)}
@@ -492,7 +383,7 @@ class WeatherCard extends HTMLElement {
                         <span class="precip">${h.precipitation[i] > 0 ? h.precipitation[i].toFixed(1) + ' mm' : '&nbsp;'}</span>
                     </div>
                 `
-            }).join("")
+                }).join("")
         }
 
         const forecast = entity?.attributes.forecast || []
@@ -517,12 +408,12 @@ class WeatherCard extends HTMLElement {
         if (this.localWeather && this.localWeather.daily) {
             const d = this.localWeather.daily;
             const days = ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"];
-            
+
             return d.time.map((timeStr: string, i: number) => {
                 const date = new Date(timeStr);
                 const dayName = i === 0 ? "Idag" : i === 1 ? "Imorgon" : days[date.getDay()];
                 const cond = this.getWmoState(d.weather_code[i]);
-                
+
                 return `
                     <div class="item">
                         <span class="label">${dayName}</span>
@@ -624,10 +515,11 @@ class WeatherCard extends HTMLElement {
 
             return `
                 <div class="icon-wrapper" style="width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center;">
-                    <img src="${iconUrl}"
-                         style="width: 100%; height: 100%; object-fit: contain;"
-                         loading="lazy"
-                    />
+                    <svg-icon 
+                        src="${iconUrl}" 
+                        condition="${finalKey}"
+                        style="width: 100%; height: 100%;"
+                    ></svg-icon>
                 </div>`
         }
 
