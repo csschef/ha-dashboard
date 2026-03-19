@@ -375,7 +375,7 @@ body.tray-open, body.popup-open {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-md);
-    padding: var(--space-sm) var(--space-md) var(--space-md);
+    padding: var(--space-md);
 }
 
 room-divider {
