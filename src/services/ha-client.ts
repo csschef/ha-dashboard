@@ -95,6 +95,11 @@ export function connectHA() {
             }
             return
         }
+
+        // Catch-all debug for calendar troubleshooting
+        if (msg.type === "result") {
+            console.log("[ha-client] result msg id:", msg.id, "success:", msg.success, "result keys:", msg.result ? Object.keys(msg.result) : "null/undefined")
+        }
     }
 
     socket.onerror = (err) => {
