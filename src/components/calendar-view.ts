@@ -100,7 +100,14 @@ class CalendarView extends HTMLElement {
 
     private formatTime(start: any, end: any) {
         if (this.isAllDay(start)) return "Hela dagen"
-        const s = new Date(this.getStartStr(start)).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })
+        const startStr = this.getStartStr(start)
+        const endStr = this.getStartStr(end)
+        
+        const s = new Date(startStr).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })
+        if (endStr) {
+            const e = new Date(endStr).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })
+            return `${s} – ${e}`
+        }
         return s
     }
 
@@ -148,18 +155,10 @@ class CalendarView extends HTMLElement {
                 font-weight: 600;
                 color: var(--text-primary);
                 letter-spacing: 0.01em;
-                margin: 28px 0 2px;
+                margin: 28px 0 20px;
                 opacity: 0.85;
             }
-            .today-date-sub {
-                font-size: 0.6875rem;
-                font-weight: 400;
-                color: var(--text-secondary);
-                text-transform: uppercase;
-                letter-spacing: 0.07em;
-                opacity: 0.55;
-                margin-bottom: 20px;
-            }
+            .today-date-sub { display: none; }
 
             .header { 
                 display: flex; 
@@ -209,43 +208,38 @@ class CalendarView extends HTMLElement {
             .event-card {
                 background: var(--color-card); 
                 border-radius: var(--radius-md, 12px); 
-                padding: 12px 16px; 
+                padding: 14px 16px; 
                 margin-bottom: 8px;
                 border: 1px solid var(--border-color); 
-                display: flex; gap: 16px; align-items: center;
+                display: flex; 
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 16px;
                 position: relative; 
                 overflow: hidden;
                 transition: transform 0.1s ease;
             }
             .event-card:active { transform: scale(0.98); }
             
-            .event-card::before {
-                content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--cal-color);
+            .event-info {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                flex: 1;
+                min-width: 0;
             }
-            
-            .event-time { 
-                display: flex; 
-                flex-direction: column; 
-                width: 75px; 
-                flex-shrink: 0;
-            }
+
             .event-time-val {
-                font-size: 0.8125rem; 
+                font-size: 0.75rem; 
                 font-weight: 600; 
-                color: var(--text-primary);
-            }
-            .event-cal-name { 
-                font-size: 0.625rem; 
-                text-transform: uppercase; 
-                letter-spacing: 0.04em; 
                 color: var(--text-secondary);
-                margin-top: 4px;
+                text-transform: uppercase;
+                letter-spacing: 0.02em;
                 opacity: 0.7;
             }
             
-            .event-details { flex: 1; min-width: 0; }
             .event-summary { 
-                font-size: 0.8125rem; 
+                font-size: 0.875rem; 
                 font-weight: 500; 
                 line-height: 1.3;
                 color: var(--text-primary); 
@@ -254,7 +248,7 @@ class CalendarView extends HTMLElement {
                 white-space: nowrap; 
             }
             .event-desc {
-                font-size: 0.75rem;
+                font-size: 0.8125rem;
                 color: var(--text-secondary);
                 opacity: 0.6;
                 margin-top: 1px;
@@ -263,15 +257,28 @@ class CalendarView extends HTMLElement {
                 white-space: nowrap;
             }
             .event-location { 
-                font-size: 0.75rem; 
+                font-size: 0.8125rem; 
                 color: var(--text-secondary); 
-                margin-top: 3px; 
+                margin-top: 1px; 
                 display: flex;
                 align-items: center;
                 gap: 4px;
                 opacity: 0.8;
             }
-            .event-location iconify-icon { color: var(--cal-color); font-size: 0.8rem; }
+            .event-location iconify-icon { color: var(--cal-color); font-size: 0.85rem; }
+
+            .event-pill {
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.625rem;
+                font-weight: 700;
+                color: white;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                white-space: nowrap;
+                flex-shrink: 0;
+                margin-top: 2px;
+            }
 
             .empty-state { 
                 padding: 120px 20px; 
@@ -286,8 +293,7 @@ class CalendarView extends HTMLElement {
             .empty-text { font-size: 0.9375rem; opacity: 0.6; }
         </style>
 
-        <div class="today-date">${new Date().toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' })}</div>
-        <div class="today-date-sub">${new Date().toLocaleDateString('sv-SE', { weekday: 'long', year: 'numeric' })}</div>
+        <div class="today-date">${new Date().toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, c => c.toUpperCase())}</div>
 
         <div class="header">
             <h2>KALENDER</h2>
@@ -311,19 +317,19 @@ class CalendarView extends HTMLElement {
                     ${grouped[day].map(e => `
                         <div class="event-card" style="--cal-color: ${e.calendarColor}" 
                              data-summary="${e.summary}" data-start="${this.getStartStr(e.start)}">
-                            <div class="event-time">
-                                <span class="event-time-val">${this.formatTime(e.start, e.end)}</span>
-                                <span class="event-cal-name">${e.calendarLabel}</span>
-                            </div>
-                            <div class="event-details">
+                            <div class="event-info">
+                                <div class="event-time-val">${this.formatTime(e.start, e.end)}</div>
                                 <div class="event-summary">${e.summary}</div>
-                                ${e.description ? `<div class="event-desc">${e.description}</div>` : ''}
                                 ${e.location ? `
                                     <div class="event-location">
                                         <iconify-icon icon="ph:map-pin-bold"></iconify-icon>
                                         <span>${e.location}</span>
                                     </div>
                                 ` : ''}
+                                ${e.description ? `<div class="event-desc">${e.description}</div>` : ''}
+                            </div>
+                            <div class="event-pill" style="background: ${e.calendarColor}">
+                                ${e.calendarLabel}
                             </div>
                         </div>
                     `).join('')}
