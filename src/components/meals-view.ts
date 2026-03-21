@@ -1,5 +1,5 @@
 import { getEntity, subscribeEntity } from "../store/entity-store"
-import { callService, fetchTodoItems } from "../services/ha-service"
+import { callService, fetchTodoItems, moveTodoItem } from "../services/ha-service"
 
 class MealsView extends HTMLElement {
     private days = [
@@ -111,15 +111,7 @@ class MealsView extends HTMLElement {
     }
 
     private moveItem(uid: string, previousUid: string | null) {
-        const data: any = {
-            entity_id: this.todoEntityId,
-            uid: uid,
-        }
-        if (previousUid) {
-            data.previous_uid = previousUid
-        }
-        
-        callService("todo", "move_item", data)
+        moveTodoItem(this.todoEntityId, uid, previousUid)
         
         // Optimistically update local order for smoothness
         const itemIdx = this.todoItems.findIndex(i => i.uid === uid)

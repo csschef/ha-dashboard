@@ -156,6 +156,34 @@ export function callTodoService(service: string, entityId: string, data: any = {
     })
 }
 
+export function moveTodoItem(entityId: string, uid: string, previousUid: string | null = null): Promise<any> {
+    return new Promise((resolve, reject) => {
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            return reject("Socket not open");
+        }
+        const reqId = nextId();
+        const handler = (event: MessageEvent) => {
+            const msg = JSON.parse(event.data);
+            if (msg.id === reqId) {
+                socket!.removeEventListener("message", handler);
+                if (msg.success) resolve(msg.result);
+                else reject(msg.error);
+            }
+        };
+        socket.addEventListener("message", handler);
+        const payload: any = { 
+            id: reqId, 
+            type: "todo/item/move",
+            entity_id: entityId,
+            uid: uid
+        };
+        if (previousUid) {
+            payload.previous_uid = previousUid;
+        }
+        socket.send(JSON.stringify(payload));
+    });
+}
+
 // --- Helpers ---
 
 // Safe REST fetch: uses relative URL so Vite proxy handles dev CORS,
