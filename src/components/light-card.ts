@@ -174,16 +174,19 @@ class LightCard extends BaseCard {
 
             const isIos = document.documentElement.getAttribute("data-theme-color") === "ios"
 
-            // Nordic tweak: desaturate colors slightly for a sophisticated feel
+            // Desaturate colors slightly for a sophisticated feel
             const ice = (v: number) => {
-                if (isIos) return v // Full color for iOS
                 const avg = (cc.r + cc.g + cc.b) / 3
+                if (isIos) {
+                    // iOS tweak: slightly muted (12% gray mix) and darker (-8%)
+                    return Math.round((v * 0.88 + avg * 0.12) * 0.92)
+                }
                 return Math.round(v * 0.85 + avg * 0.15)
             }
             const rf = ice(cc.r), gf = ice(cc.g), bf = ice(cc.b)
 
             const l = isIos
-                ? (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.05)) // Barely lighten, keep it colorful
+                ? (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.03)) // Very subtle highlight
                 : (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.25)) // Classic heavily washed top
                 
             const dk = (v: number) => Math.round(v * 0.7)
