@@ -322,10 +322,10 @@ class WeatherCard extends HTMLElement {
             .expander-content { overflow: hidden; }
             .content-inner { padding-top: 24px; }
 
-            .tabs { display: flex; background: rgba(255,255,255,0.1); padding: 4px; border-radius: 12px; margin-bottom: 20px; }
+            .tabs { display: flex; background: rgba(255,255,255,0.1); padding: 4px; border-radius: var(--radius-md, 16px); margin-bottom: 20px; }
             :host:not([expanded]) .tabs { background: var(--color-card-alt); }
 
-            .tab { flex: 1; border: none; background: transparent; color: var(--text-secondary); padding: 8px; font-size: 0.8125rem; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.2s; user-select: none; }
+            .tab { flex: 1; border: none; background: transparent; color: var(--text-secondary); padding: 8px; font-size: 0.8125rem; font-weight: 500; border-radius: calc(var(--radius-md, 16px) - 4px); cursor: pointer; transition: all 0.2s; user-select: none; }
             .tab.active { background: var(--color-card); color: var(--text-primary); }
 
             .scroll { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; scrollbar-width: none; }
