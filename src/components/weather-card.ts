@@ -377,6 +377,28 @@ class WeatherCard extends HTMLElement {
     }
 
     private renderHourly(entity?: HAEntity) {
+        let sunsetHour = 20; let sunsetMin = 0;
+        let sunriseHour = 6; let sunriseMin = 0;
+        
+        const sun = getEntity("sun.sun");
+        if (sun && sun.attributes) {
+            if (sun.attributes.next_setting) {
+                const d = new Date(sun.attributes.next_setting);
+                sunsetHour = d.getHours(); sunsetMin = d.getMinutes();
+            }
+            if (sun.attributes.next_rising) {
+                const d = new Date(sun.attributes.next_rising);
+                sunriseHour = d.getHours(); sunriseMin = d.getMinutes();
+            }
+        }
+
+        const isNightAt = (d: Date) => {
+            const mins = d.getHours() * 60 + d.getMinutes();
+            const setMins = sunsetHour * 60 + sunsetMin;
+            const riseMins = sunriseHour * 60 + sunriseMin;
+            return mins >= setMins || mins < riseMins;
+        }
+
         if (this.localWeather && this.localWeather.hourly) {
             const h = this.localWeather.hourly;
             const now = new Date().getTime();
@@ -389,8 +411,11 @@ class WeatherCard extends HTMLElement {
                 .map((item: any) => {
                     const i = item.i;
                     const d = item.d;
-                    const cond = this.getWmoState(h.weather_code[i]);
-                    const isNight = d.getHours() > 20 || d.getHours() < 6;
+                    let cond = this.getWmoState(h.weather_code[i]);
+                    const isNight = isNightAt(d);
+                    if (isNight && cond.toLowerCase().trim() === "sunny") {
+                        cond = "clear-night";
+                    }
 
                     return `
                     <div class="item">
@@ -407,13 +432,16 @@ class WeatherCard extends HTMLElement {
         return forecast.slice(0, 15).map((f: any) => {
             const date = new Date(f.datetime)
             const time = date.getHours().toString().padStart(2, '0') + ":00"
-            const hour = date.getHours()
-            const isNight = hour > 20 || hour < 6
+            const isNight = isNightAt(date);
+            let cond = f.condition;
+            if (isNight && (cond || "").toLowerCase().trim() === "sunny") {
+                cond = "clear-night";
+            }
 
             return `
                 <div class="item">
                     <span class="label">${time}</span>
-                    ${this.getWeatherIcon(f.condition, 26, isNight)}
+                    ${this.getWeatherIcon(cond, 26, isNight)}
                     <span class="f-temp">${Math.round(f.temperature)}°</span>
                     <span class="precip">${f.precipitation > 0 ? f.precipitation.toFixed(1) + ' mm' : '&nbsp;'}</span>
                 </div>

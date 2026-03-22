@@ -348,8 +348,8 @@ body.tray-open, body.popup-open {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--color-danger) 20%, transparent);
-    color: var(--color-danger);
+    background: var(--close-bg, color-mix(in srgb, var(--color-danger) 20%, transparent));
+    color: var(--close-text, var(--color-danger));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -362,7 +362,7 @@ body.tray-open, body.popup-open {
 
 .back-btn iconify-icon {
     font-size: 0.875rem;
-    color: var(--color-danger);
+    color: var(--close-text, var(--color-danger));
 }
 
 .back-btn iconify-icon svg {
