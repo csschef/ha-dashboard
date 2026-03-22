@@ -165,7 +165,12 @@ async function getStatesViaREST() {
     console.log("Requesting ali entity states via REST /api/states")
     
     let url = "/api/states"
-    if (HA_URL && !HA_URL.startsWith(window.location.origin)) {
+    
+    // Använd relativ URL vid lokal utveckling så att Vite-proxyn kan hantera anropet och vi slipper CORS.
+    const port = parseInt(window.location.port)
+    const isLocalDev = port >= 5173 && port <= 5179
+    
+    if (HA_URL && !HA_URL.startsWith(window.location.origin) && !isLocalDev) {
         url = `${HA_URL}/api/states`
     }
 
