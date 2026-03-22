@@ -303,10 +303,22 @@ class MealsView extends HTMLElement {
                 position: relative;
             }
 
-            .shopping-item.drag-over::before {
+            .shopping-item.drag-over-top::before {
                 content: '';
                 position: absolute;
                 top: -1px;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: var(--accent);
+                z-index: 10;
+                box-shadow: 0 0 10px var(--accent);
+                border-radius: 2px;
+            }
+            .shopping-item.drag-over-bottom::after {
+                content: '';
+                position: absolute;
+                bottom: -1px;
                 left: 0;
                 right: 0;
                 height: 3px;
@@ -608,6 +620,69 @@ class MealsView extends HTMLElement {
         let draggedUid: string | null = null
         const shoppingList = root.querySelector(".shopping-list")
 
+        // Drag Scroll Logic
+        let dragScrollInterval: any = null;
+        let scrollSpeed = 0;
+
+        const handleDragScroll = (e: DragEvent) => {
+            if (!draggedUid || !shoppingList) {
+                if (dragScrollInterval) {
+                    clearInterval(dragScrollInterval);
+                    dragScrollInterval = null;
+                }
+                return;
+            }
+            const edgeThreshold = 100;
+            const clientY = e.clientY;
+            const windowHeight = window.innerHeight;
+
+            let targetSpeed = 0;
+            const listRect = shoppingList.getBoundingClientRect();
+
+            if (clientY < edgeThreshold) {
+                // Dragging near top edge -> scroll up (negative speed)
+                // Only if the list's top edge is above our threshold
+                if (listRect.top < edgeThreshold) {
+                    targetSpeed = -6; // Slower speed
+                }
+            } else if (clientY > windowHeight - edgeThreshold) {
+                // Dragging near bottom edge -> scroll down (positive speed)
+                // Only if the list's bottom edge is below our threshold
+                if (listRect.bottom > windowHeight - edgeThreshold + 40) {
+                    targetSpeed = 6; // Slower speed
+                }
+            }
+
+            scrollSpeed = targetSpeed;
+
+            if (scrollSpeed !== 0 && !dragScrollInterval) {
+                dragScrollInterval = setInterval(() => {
+                    // Double check boundaries inside interval to prevent over-scrolling
+                    const curRect = shoppingList.getBoundingClientRect();
+                    if (scrollSpeed < 0 && curRect.top >= edgeThreshold) return;
+                    if (scrollSpeed > 0 && curRect.bottom <= windowHeight - edgeThreshold + 40) return;
+                    
+                    window.scrollBy({ top: scrollSpeed, behavior: 'instant' });
+                }, 16);
+            } else if (scrollSpeed === 0 && dragScrollInterval) {
+                clearInterval(dragScrollInterval);
+                dragScrollInterval = null;
+            }
+        };
+
+        const stopDragScroll = () => {
+            if (dragScrollInterval) {
+                clearInterval(dragScrollInterval);
+                dragScrollInterval = null;
+            }
+            scrollSpeed = 0;
+        };
+
+        document.removeEventListener("dragover", handleDragScroll);
+        document.addEventListener("dragover", handleDragScroll);
+        document.removeEventListener("dragend", stopDragScroll);
+        document.addEventListener("dragend", stopDragScroll);
+
         root.querySelectorAll(".shopping-item[draggable='true']").forEach(item => {
             item.addEventListener("dragstart", (e: any) => {
                 draggedUid = item.getAttribute("data-uid")
@@ -621,43 +696,50 @@ class MealsView extends HTMLElement {
                 e.dataTransfer.dropEffect = "move"
                 const targetUid = item.getAttribute("data-uid")
                 if (targetUid !== draggedUid) {
-                    item.classList.add("drag-over")
+                    const rect = item.getBoundingClientRect()
+                    const midY = rect.top + rect.height / 2
+                    
+                    if (e.clientY < midY) {
+                        item.classList.add("drag-over-top")
+                        item.classList.remove("drag-over-bottom")
+                    } else {
+                        item.classList.add("drag-over-bottom")
+                        item.classList.remove("drag-over-top")
+                    }
                 }
             })
 
             item.addEventListener("dragleave", () => {
-                item.classList.remove("drag-over")
+                item.classList.remove("drag-over-top", "drag-over-bottom")
             })
 
             item.addEventListener("dragend", () => {
                 item.classList.remove("dragging")
                 shoppingList?.classList.remove("dragging-active")
-                root.querySelectorAll(".shopping-item").forEach(i => i.classList.remove("drag-over"))
+                root.querySelectorAll(".shopping-item").forEach(i => i.classList.remove("drag-over-top", "drag-over-bottom"))
             })
 
             item.addEventListener("drop", (e: any) => {
                 e.preventDefault()
-                item.classList.remove("drag-over")
+                const isBottomDrop = item.classList.contains("drag-over-bottom")
+                
+                item.classList.remove("drag-over-top", "drag-over-bottom")
                 shoppingList?.classList.remove("dragging-active")
+                
                 const targetUid = item.getAttribute("data-uid")
                 
                 if (draggedUid && targetUid && draggedUid !== targetUid) {
-                    // Find actual active items to figure out previous item
                     const activeItems = this.todoItems.filter(i => i.status !== 'completed')
                     const targetIdx = activeItems.findIndex(i => i.uid === targetUid)
-                    const draggedIdx = activeItems.findIndex(i => i.uid === draggedUid)
                     
                     let previousUid: string | null = null
                     
-                    if (targetIdx === 0) {
-                        // Move to top
-                        previousUid = null
-                    } else if (draggedIdx < targetIdx) {
-                        // Moving down: we want to be AFTER the target
+                    if (isBottomDrop) {
+                        // Drop in bottom half -> place AFTER target
                         previousUid = targetUid
                     } else {
-                        // Moving up: we want to be AFTER the item BEFORE the target
-                        previousUid = activeItems[targetIdx - 1].uid
+                        // Drop in top half -> place BEFORE target
+                        previousUid = targetIdx === 0 ? null : activeItems[targetIdx - 1].uid
                     }
                     
                     this.moveItem(draggedUid, previousUid)
