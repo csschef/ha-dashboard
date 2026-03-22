@@ -1,6 +1,4 @@
-import { getActivePerson, setActivePerson, getEntity } from "../store/entity-store";
-
-class SettingsPopup extends HTMLElement {
+class ThemePopup extends HTMLElement {
     private isOpen = false;
 
     constructor() {
@@ -17,7 +15,7 @@ class SettingsPopup extends HTMLElement {
         this.classList.add("active");
         document.body.classList.add("popup-open");
         this.render();
-        window.history.pushState({ type: "popup", id: "settingsPopup" }, "")
+        window.history.pushState({ type: "popup", id: "themePopup" }, "")
     }
 
     public close(fromHistory = false) {
@@ -25,21 +23,22 @@ class SettingsPopup extends HTMLElement {
         this.classList.remove("active");
         
         // Check if any OTHER popups are still open before unlocking scroll
-        const otherPopups = ["lightPopup", "historyPopup", "tvPopup", "personPopup", "settingsPopup", "todoPopup", "calendarPopup"]
-            .filter(id => id !== "settingsPopup")
+        const otherPopups = ["lightPopup", "historyPopup", "tvPopup", "personPopup", "settingsPopup", "todoPopup", "calendarPopup", "themePopup"]
+            .filter(id => id !== "themePopup")
             .some(id => document.getElementById(id)?.classList.contains("active"));
         
         if (!otherPopups) document.body.classList.remove("popup-open");
 
-        if (!fromHistory && window.history.state?.type === "popup" && window.history.state?.id === "settingsPopup") {
+        if (!fromHistory && window.history.state?.type === "popup" && window.history.state?.id === "themePopup") {
             window.history.back()
         }
         this.render();
     }
 
-    private selectPerson(person: string) {
-        setActivePerson(person);
-        this.close();
+    private selectThemeColor(colorId: string) {
+        localStorage.setItem("ha-theme-color", colorId);
+        document.documentElement.setAttribute("data-theme-color", colorId);
+        this.render();
     }
 
     render() {
@@ -48,9 +47,7 @@ class SettingsPopup extends HTMLElement {
             return;
         }
 
-        const activePersonId = getActivePerson();
-        const person = getEntity(activePersonId);
-        const coords = person?.attributes.latitude ? `${person.attributes.latitude.toFixed(3)}, ${person.attributes.longitude.toFixed(3)}` : "Ingen GPS-data";
+        const currentColor = document.documentElement.getAttribute("data-theme-color") || "standard";
 
         this.shadowRoot!.innerHTML = `
         <style>
@@ -77,13 +74,13 @@ class SettingsPopup extends HTMLElement {
                 border: 1px solid var(--border-color);
                 overflow: hidden;
             }
-            h2 { margin: 0 0 8px 0; font-size: 1.25rem; color: #fff; text-align: center; }
-            p { margin: 0 0 24px 0; font-size: 0.875rem; color: #8e8e93; text-align: center; }
+            h2 { margin: 0 0 8px 0; font-size: 1.25rem; color: var(--text-primary); text-align: center; }
+            p { margin: 0 0 24px 0; font-size: 0.875rem; color: var(--text-secondary); text-align: center; }
             
             .options { display: flex; flex-direction: column; gap: 12px; }
             
             .option {
-                background: rgba(255,255,255,0.05);
+                background: var(--color-card-alt);
                 border-radius: 16px;
                 padding: 16px;
                 display: flex;
@@ -94,61 +91,66 @@ class SettingsPopup extends HTMLElement {
                 border: 2px solid transparent;
             }
             .option.active {
-                background: var(--accent-low, rgba(0,122,255,0.1));
+                background: var(--accent-low, rgba(0,122,255,0.05));
                 border-color: var(--accent);
             }
             .option:active { transform: scale(0.98); }
             
-            .name { flex: 1; font-weight: 500; color: #fff; }
-            .check { color: var(--accent); font-size: 1.25rem; display: none; }
-            .option.active .check { display: block; }
-
-            .debug-info {
-                margin-top: 24px;
-                padding: 12px;
-                background: rgba(0,0,0,0.2);
-                border-radius: 12px;
-                font-family: monospace;
-                font-size: 0.6875rem;
-                color: #8e8e93;
+            .color-preview {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
             }
-            .debug-title { font-weight: bold; margin-bottom: 4px; color: #aaa; }
+
+            .name { font-weight: 500; color: var(--text-primary); }
+            .check { color: var(--accent); font-size: 1.25rem; display: none; margin-left: auto; }
+            .option.active .check { display: block; }
+            
+            .theme-desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
 
             .close-btn {
                 margin-top: 24px;
                 width: 100%;
-                background: #2c2c2e;
-                color: #fff;
+                background: var(--color-card-alt);
+                color: var(--text-primary);
                 border: none;
                 border-radius: 14px;
                 padding: 14px;
+                font-size: 1rem;
                 font-weight: 600;
                 cursor: pointer;
+                transition: background 0.2s;
             }
+            .close-btn:active { background: var(--border-color); }
 
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         </style>
         <div class="backdrop" id="backdrop">
             <div class="content">
-                <h2>Enhetsinställningar</h2>
-                <p>Anpassa vyn för den här enheten.</p>
+                <h2>Tema</h2>
+                <p>Anpassa utseendet på gränssnittet.</p>
                 
                 <div class="options">
-                    <div class="option ${activePersonId === 'person.sebastian' ? 'active' : ''}" data-person="person.sebastian">
-                        <span class="name">Sebastian</span>
-                        <span class="check">✓</span>
+                    <div class="option ${currentColor === 'standard' ? 'active' : ''}" data-color="standard">
+                        <div class="color-preview" style="background: linear-gradient(135deg, #5b7fa6 0%, #2e3440 100%);"></div>
+                        <div>
+                            <div class="name">Standard</div>
+                            <div class="theme-desc">Nordisk isblå och mörk sten</div>
+                        </div>
+                        <span class="check"><iconify-icon icon="ph:check-bold"></iconify-icon></span>
                     </div>
-                    <div class="option ${activePersonId === 'person.sara' ? 'active' : ''}" data-person="person.sara">
-                        <span class="name">Sara</span>
-                        <span class="check">✓</span>
-                    </div>
-                </div>
 
-                <div class="debug-info">
-                    <div class="debug-title">DEBUG INFO</div>
-                    <div>Entity: ${activePersonId}</div>
-                    <div>GPS: ${coords}</div>
-                    <div>HA Connection: ${person ? 'OK' : 'Väntar på data...'}</div>
+                    <div class="option ${currentColor === 'ios' ? 'active' : ''}" data-color="ios">
+                        <div class="color-preview" style="background: linear-gradient(135deg, #007aff 0%, #4da4ea 100%);"></div>
+                        <div>
+                            <div class="name">Homey (iOS)</div>
+                            <div class="theme-desc">Runt, mjukt & Apple Blå</div>
+                        </div>
+                        <span class="check"><iconify-icon icon="ph:check-bold"></iconify-icon></span>
+                    </div>
+
                 </div>
 
                 <button class="close-btn" id="closeBtn">Färdig</button>
@@ -164,11 +166,11 @@ class SettingsPopup extends HTMLElement {
 
         this.shadowRoot!.querySelectorAll(".option").forEach(opt => {
             opt.addEventListener("click", () => {
-                const person = opt.getAttribute("data-person")!;
-                this.selectPerson(person);
+                const color = opt.getAttribute("data-color")!;
+                this.selectThemeColor(color);
             });
         });
     }
 }
 
-customElements.define("settings-popup", SettingsPopup);
+customElements.define("theme-popup", ThemePopup);

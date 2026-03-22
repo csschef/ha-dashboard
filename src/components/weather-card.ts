@@ -338,28 +338,67 @@ class WeatherCard extends HTMLElement {
             .f-temp.low { opacity: 0.5; }
             .precip { font-size: 0.6875rem; font-weight: 500; color: var(--text-secondary); opacity: 0.9; }
 
-            .sun-info { display: flex; justify-content: center; gap: 32px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.8125rem; color: var(--text-secondary); font-weight: 500; }
+            .sun-info { display: flex; justify-content: center; gap: 32px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.8125rem; color: var(--text-secondary); font-weight: var(--weather-sun-weight, 500); }
             .sun-item { display: flex; align-items: center; gap: 8px; }
 
             /* ── Theme Overrides ── */
             @media (prefers-color-scheme: light) {
-                :host:not([data-theme="dark"]) { background: rgba(51,140,210,1); color: #ffffff; border-color: rgba(255, 255, 255, 0.3); }
-                :host:not([data-theme="dark"])::after { background: linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%); }
-                :host:not([data-theme="dark"]) .label, :host:not([data-theme="dark"]) .location, :host:not([data-theme="dark"]) .unit, :host:not([data-theme="dark"]) .f-temp.low, :host:not([data-theme="dark"]) .precip, :host:not([data-theme="dark"]) .sun-info { color: rgba(255, 255, 255, 0.8) !important; }
-                :host:not([data-theme="dark"]) .tabs { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); }
-                :host:not([data-theme="dark"]) .tab { color: rgba(255, 255, 255, 0.7); }
-                :host:not([data-theme="dark"]) .tab.active { background: #ffffff; color: #0088cc; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+                :host:not([data-theme="dark"]) { background: var(--weather-bg-solid, rgba(51,140,210,1)); color: var(--weather-text, #ffffff); border: var(--weather-border, 1px solid rgba(255, 255, 255, 0.3)); }
+                :host:not([data-theme="dark"])::after { background: var(--weather-bg, linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%)); }
+                :host:not([data-theme="dark"]) .label, :host:not([data-theme="dark"]) .location, :host:not([data-theme="dark"]) .unit, :host:not([data-theme="dark"]) .f-temp.low, :host:not([data-theme="dark"]) .precip, :host:not([data-theme="dark"]) .sun-info { color: var(--weather-text-dim, rgba(255, 255, 255, 0.8)) !important; }
+                :host:not([data-theme="dark"]) .tabs { background: var(--weather-tabs-bg, rgba(255, 255, 255, 0.2)); backdrop-filter: blur(4px); }
+                :host:not([data-theme="dark"]) .tab { color: var(--weather-tab-text, rgba(255, 255, 255, 0.7)); }
+                :host:not([data-theme="dark"]) .tab.active { background: var(--weather-tab-active-bg, #ffffff); color: var(--weather-tab-active-text, #0088cc); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
             }
-            :host-context([data-theme="light"]) { background: rgba(51,140,210,1); color: #ffffff; border-color: rgba(255, 255, 255, 0.3); }
-            :host-context([data-theme="light"])::after { background: linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%); }
-            :host-context([data-theme="light"]) .label, :host-context([data-theme="light"]) .location, :host-context([data-theme="light"]) .unit, :host-context([data-theme="light"]) .f-temp.low, :host-context([data-theme="light"]) .precip, :host-context([data-theme="light"]) .sun-info { color: rgba(255, 255, 255, 0.8) !important; }
-            :host-context([data-theme="light"]) .tabs { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); }
-            :host-context([data-theme="light"]) .tab { color: rgba(255, 255, 255, 0.7); }
-            :host-context([data-theme="light"]) .tab.active { background: #ffffff; color: #0088cc; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+            :host-context([data-theme="light"]) { background: var(--weather-bg-solid, rgba(51,140,210,1)); color: var(--weather-text, #ffffff); border: var(--weather-border, 1px solid rgba(255, 255, 255, 0.3)); }
+            :host-context([data-theme="light"])::after { background: var(--weather-bg, linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%)); }
+            :host-context([data-theme="light"]) .label, :host-context([data-theme="light"]) .location, :host-context([data-theme="light"]) .unit, :host-context([data-theme="light"]) .f-temp.low, :host-context([data-theme="light"]) .precip, :host-context([data-theme="light"]) .sun-info { color: var(--weather-text-dim, rgba(255, 255, 255, 0.8)) !important; }
+            :host-context([data-theme="light"]) .tabs { background: var(--weather-tabs-bg, rgba(255, 255, 255, 0.2)); backdrop-filter: blur(4px); }
+            :host-context([data-theme="light"]) .tab { color: var(--weather-tab-text, rgba(255, 255, 255, 0.7)); }
+            :host-context([data-theme="light"]) .tab.active { background: var(--weather-tab-active-bg, #ffffff); color: var(--weather-tab-active-text, #0088cc); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+            
+            /* ── iOS Dark Mode ── */
+            :host-context([data-theme-color="ios"][data-theme="dark"]) { background: var(--weather-bg-solid); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--weather-text, #ffffff); }
+            :host-context([data-theme-color="ios"][data-theme="dark"])::after { background: var(--weather-bg); }
+            :host-context([data-theme-color="ios"][data-theme="dark"]) .label, :host-context([data-theme-color="ios"][data-theme="dark"]) .location, :host-context([data-theme-color="ios"][data-theme="dark"]) .unit, :host-context([data-theme-color="ios"][data-theme="dark"]) .f-temp.low, :host-context([data-theme-color="ios"][data-theme="dark"]) .precip, :host-context([data-theme-color="ios"][data-theme="dark"]) .sun-info { color: var(--weather-text-dim, rgba(255, 255, 255, 0.8)) !important; }
+            :host-context([data-theme-color="ios"][data-theme="dark"]) .tabs { background: var(--weather-tabs-bg); }
+            :host-context([data-theme-color="ios"][data-theme="dark"]) .tab { color: var(--weather-tab-text, rgba(255, 255, 255, 0.7)); }
+            :host-context([data-theme-color="ios"][data-theme="dark"]) .tab.active { background: var(--weather-tab-active-bg, #ffffff); color: var(--weather-tab-active-text, #000000); }
+
+            @media (prefers-color-scheme: dark) {
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) { background: var(--weather-bg-solid); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--weather-text, #ffffff); }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"]))::after { background: var(--weather-bg); }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) .label, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .location, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .unit, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .f-temp.low, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .precip, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .sun-info { color: var(--weather-text-dim, rgba(255, 255, 255, 0.8)) !important; }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) .tabs { background: var(--weather-tabs-bg); }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) .tab { color: var(--weather-tab-text, rgba(255, 255, 255, 0.7)); }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) .tab.active { background: var(--weather-tab-active-bg, #ffffff); color: var(--weather-tab-active-text, #000000); }
+            }
         `;
     }
 
     private renderHourly(entity?: HAEntity) {
+        let sunsetHour = 20; let sunsetMin = 0;
+        let sunriseHour = 6; let sunriseMin = 0;
+        
+        const sun = getEntity("sun.sun");
+        if (sun && sun.attributes) {
+            if (sun.attributes.next_setting) {
+                const d = new Date(sun.attributes.next_setting);
+                sunsetHour = d.getHours(); sunsetMin = d.getMinutes();
+            }
+            if (sun.attributes.next_rising) {
+                const d = new Date(sun.attributes.next_rising);
+                sunriseHour = d.getHours(); sunriseMin = d.getMinutes();
+            }
+        }
+
+        const isNightAt = (d: Date) => {
+            const mins = d.getHours() * 60 + d.getMinutes();
+            const setMins = sunsetHour * 60 + sunsetMin;
+            const riseMins = sunriseHour * 60 + sunriseMin;
+            return mins >= setMins || mins < riseMins;
+        }
+
         if (this.localWeather && this.localWeather.hourly) {
             const h = this.localWeather.hourly;
             const now = new Date().getTime();
@@ -372,8 +411,11 @@ class WeatherCard extends HTMLElement {
                 .map((item: any) => {
                     const i = item.i;
                     const d = item.d;
-                    const cond = this.getWmoState(h.weather_code[i]);
-                    const isNight = d.getHours() > 20 || d.getHours() < 6;
+                    let cond = this.getWmoState(h.weather_code[i]);
+                    const isNight = isNightAt(d);
+                    if (isNight && cond.toLowerCase().trim() === "sunny") {
+                        cond = "clear-night";
+                    }
 
                     return `
                     <div class="item">
@@ -390,13 +432,16 @@ class WeatherCard extends HTMLElement {
         return forecast.slice(0, 15).map((f: any) => {
             const date = new Date(f.datetime)
             const time = date.getHours().toString().padStart(2, '0') + ":00"
-            const hour = date.getHours()
-            const isNight = hour > 20 || hour < 6
+            const isNight = isNightAt(date);
+            let cond = f.condition;
+            if (isNight && (cond || "").toLowerCase().trim() === "sunny") {
+                cond = "clear-night";
+            }
 
             return `
                 <div class="item">
                     <span class="label">${time}</span>
-                    ${this.getWeatherIcon(f.condition, 26, isNight)}
+                    ${this.getWeatherIcon(cond, 26, isNight)}
                     <span class="f-temp">${Math.round(f.temperature)}°</span>
                     <span class="precip">${f.precipitation > 0 ? f.precipitation.toFixed(1) + ' mm' : '&nbsp;'}</span>
                 </div>

@@ -7,9 +7,9 @@ const IH = 58 // drum item height px
 class CalendarPopup extends HTMLElement {
     private isOpen = false
     private calendars = [
-        { id: "calendar.saras_kalender",            label: "Sara",   color: "#bf8686" },
-        { id: "calendar.sebbes_kalender",           label: "Sebbe",  color: "#7b96b2" },
-        { id: "calendar.sebastian_privat_kalender", label: "Privat", color: "#9497ad", private: true }
+        { id: "calendar.saras_kalender",            label: "Sara",   color: "var(--cal-sara, #bf8686)" },
+        { id: "calendar.sebbes_kalender",           label: "Sebbe",  color: "var(--cal-sebbe, #7b96b2)" },
+        { id: "calendar.sebastian_privat_kalender", label: "Privat", color: "var(--cal-privat, #9497ad)", private: true }
     ]
     private selectedCalendar = ""
     private editingEvent: any = null
@@ -159,10 +159,10 @@ class CalendarPopup extends HTMLElement {
             }
             .close-btn {
                 width: 28px; height: 28px; border-radius: 50%;
-                background: color-mix(in srgb, var(--color-danger) 20%, transparent);
+                background: var(--close-bg, color-mix(in srgb, var(--color-danger) 20%, transparent));
                 border: none;
                 display: flex; align-items: center; justify-content: center;
-                cursor: pointer; color: var(--color-danger); font-size: 0.875rem; transition: background 0.15s;
+                cursor: pointer; color: var(--close-text, var(--color-danger)); font-size: 0.875rem; transition: background 0.15s;
             }
             .close-btn:active { background: var(--border-color); }
 

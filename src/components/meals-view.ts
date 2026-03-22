@@ -198,10 +198,11 @@ class MealsView extends HTMLElement {
                 border-left: 3px solid transparent;
             }
             .meal-card.today {
-                border-left-color: var(--accent);
+                background: var(--accent);
+                border-left-color: transparent;
             }
             .meal-card.today .day-label, .meal-card.today .meal-input {
-                color: var(--accent);
+                color: #ffffff;
                 opacity: 1;
             }
             .day-label {
@@ -229,6 +230,7 @@ class MealsView extends HTMLElement {
                 overflow: hidden;
             }
             .meal-input::placeholder { color: var(--text-secondary); opacity: 0.3; }
+            .meal-card.today .meal-input::placeholder { color: #ffffff; opacity: 0.7; }
 
             /* ── Shopping List ── */
             .shopping-container {

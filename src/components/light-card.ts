@@ -167,22 +167,25 @@ class LightCard extends BaseCard {
 
         if (cc && isOn) {
 
+            const isIos = document.documentElement.getAttribute("data-theme-color") === "ios"
+
             // Nordic tweak: desaturate colors slightly for a sophisticated feel
             const ice = (v: number) => {
+                if (isIos) return v // Full color for iOS
                 const avg = (cc.r + cc.g + cc.b) / 3
                 return Math.round(v * 0.85 + avg * 0.15)
             }
             const rf = ice(cc.r), gf = ice(cc.g), bf = ice(cc.b)
 
-            const l = (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.25))
+            const l = isIos
+                ? (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.05)) // Barely lighten, keep it colorful
+                : (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.25)) // Classic heavily washed top
+                
             const dk = (v: number) => Math.round(v * 0.7)
 
-            // Directional Light Gradient: Base color -> Lightened highlights on the right
             const baseCol = `rgb(${rf},${gf},${bf})`
             const lightCol = `rgb(${l(rf)},${l(gf)},${l(bf)})`
             card.style.setProperty("--card-bg", `linear-gradient(145deg, ${baseCol} 0%, ${lightCol} 100%)`)
-
-            accentColor = `rgb(${dk(rf)},${dk(gf)},${dk(bf)})`
 
             const lin = (v: number) => {
                 v = v / 255
@@ -190,6 +193,8 @@ class LightCard extends BaseCard {
             }
             const lum = 0.2126 * lin(rf) + 0.7152 * lin(gf) + 0.0722 * lin(bf)
             const isLight = lum > 0.45
+
+            accentColor = isLight ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.25)"
 
             card.style.setProperty("--card-text-primary", isLight ? "#2e3440" : "#eceff4")
             card.style.setProperty("--card-text-secondary", isLight ? "rgba(46, 52, 64, 0.75)" : "rgba(236, 239, 244, 0.7)")

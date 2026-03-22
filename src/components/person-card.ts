@@ -115,9 +115,9 @@ class PersonCard extends BaseCard {
 
     private getBatteryIcon(level: number) {
         const fillWidth = Math.max(1, Math.round(14 * (level / 100)))
-        let color = "#4cd964" // Apple Green
-        if (level < 20) color = "#ff3b30" // Apple Red
-        else if (level < 50) color = "#ffcc00" // Apple Yellow
+        let color = "var(--color-success, #34c759)"
+        if (level < 20) color = "var(--color-danger, #ff3b30)"
+        else if (level < 50) color = "var(--yellow-accent, #ffcc00)"
 
         return `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

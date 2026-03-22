@@ -33,11 +33,20 @@ const CARD_GRADIENT: { pos: number; rgb: [number, number, number] }[] = [
     { pos: 1.00, rgb: [255, 130, 20] },    // deep orange
 ]
 
-function lerpGradient(t: number): [number, number, number] {
+const IOS_TEMP_GRADIENT: { pos: number; rgb: [number, number, number] }[] = [
+    { pos: 0.00, rgb: [60, 140, 255] },    // deep cool blue
+    { pos: 0.25, rgb: [100, 180, 255] },   // vibrant light blue
+    { pos: 0.50, rgb: [255, 200, 100] },   // warm yellow/orange (instead of beige)
+    { pos: 0.75, rgb: [255, 140, 0] },     // intense amber
+    { pos: 1.00, rgb: [255, 69, 0] },      // burning orange
+]
+
+function lerpGradient(t: number, isIos: boolean = false): [number, number, number] {
     t = Math.max(0, Math.min(1, t))
-    for (let i = 0; i < CARD_GRADIENT.length - 1; i++) {
-        const left = CARD_GRADIENT[i]
-        const right = CARD_GRADIENT[i + 1]
+    const grad = isIos ? IOS_TEMP_GRADIENT : CARD_GRADIENT
+    for (let i = 0; i < grad.length - 1; i++) {
+        const left = grad[i]
+        const right = grad[i + 1]
         if (t >= left.pos && t <= right.pos) {
             const s = (t - left.pos) / (right.pos - left.pos)
             return [
@@ -47,7 +56,7 @@ function lerpGradient(t: number): [number, number, number] {
             ]
         }
     }
-    return t < 0 ? CARD_GRADIENT[0].rgb : CARD_GRADIENT[CARD_GRADIENT.length - 1].rgb
+    return t < 0 ? grad[0].rgb : grad[grad.length - 1].rgb
 }
 
 /**
@@ -61,10 +70,13 @@ export function getCardColor(entity: HAEntity): { r: number; g: number; b: numbe
 
     const attr = entity.attributes
 
-    // RGB / HS color mode → mute 30 % toward white
+    // RGB / HS color mode → mute toward white, unless iOS theme
     if (attr.color_mode !== "color_temp" && attr.rgb_color) {
         const [r, g, b] = attr.rgb_color
-        const m = (v: number) => Math.round(v * 0.7 + 255 * 0.3)
+        const isIos = document.documentElement.getAttribute("data-theme-color") === "ios"
+        const m = isIos 
+            ? (v: number) => v // 100% Raw color from Home Assistant
+            : (v: number) => Math.round(v * 0.7 + 255 * 0.3)   // Classic faded Nordic standard
         return { r: m(r), g: m(g), b: m(b) }
     }
 
@@ -80,7 +92,8 @@ export function getCardColor(entity: HAEntity): { r: number; g: number; b: numbe
         const minM = 153
         const maxM = 500
         const t = (mired - minM) / (maxM - minM)
-        const [r, g, b] = lerpGradient(t)
+        const isIos = document.documentElement.getAttribute("data-theme-color") === "ios"
+        const [r, g, b] = lerpGradient(t, isIos)
         return { r, g, b }
     }
 

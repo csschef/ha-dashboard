@@ -230,6 +230,12 @@ class EnergyView extends HTMLElement {
                     <div class="chart-inner">
                         <div class="now-tag" style="left: ${(Math.min(numBars, currentIndex - displayStartIdx + 0.5) / numBars) * 100}%;">Nu</div>
                         <svg viewBox="0 0 ${totalWidth} ${chartHeight}">
+                            <defs>
+                                <linearGradient id="e-grad-success" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="color-mix(in srgb, var(--color-success) 85%, white)"/><stop offset="100%" stop-color="color-mix(in srgb, var(--color-success) 85%, black)"/></linearGradient>
+                                <linearGradient id="e-grad-danger" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="color-mix(in srgb, var(--color-danger) 85%, white)"/><stop offset="100%" stop-color="color-mix(in srgb, var(--color-danger) 85%, black)"/></linearGradient>
+                                <linearGradient id="e-grad-yellow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="color-mix(in srgb, var(--yellow-accent) 85%, white)"/><stop offset="100%" stop-color="color-mix(in srgb, var(--yellow-accent) 85%, black)"/></linearGradient>
+                                <linearGradient id="e-grad-accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="color-mix(in srgb, var(--accent) 85%, white)"/><stop offset="100%" stop-color="color-mix(in srgb, var(--accent) 85%, black)"/></linearGradient>
+                            </defs>
                             <!-- Grid Lines -->
                             ${yAxisSteps.map(val => {
             const y = chartHeight - ((val - minDisplay) / totalRange) * chartHeight;
@@ -244,7 +250,12 @@ class EnergyView extends HTMLElement {
             const x = i * (barWidth + barGap);
             const yPos = p >= 0 ? zeroY - h : zeroY;
             const { color } = this.getPriceStatus(p, this.pricesToday);
-            return `<rect class="bar" x="${x}" y="${yPos}" width="${barWidth}" height="${h}" fill="${color}" rx="3" fill-opacity="1" />`;
+            
+            const fillUrl = color.includes('success') ? 'url(#e-grad-success)' :
+                            color.includes('danger') ? 'url(#e-grad-danger)' :
+                            color.includes('yellow') ? 'url(#e-grad-yellow)' : 'url(#e-grad-accent)';
+                            
+            return `<rect class="bar" x="${x}" y="${yPos}" width="${barWidth}" height="${h}" fill="${fillUrl}" rx="3" fill-opacity="1" />`;
         }).join('')}
 
                             <!-- Now Indicator line -->

@@ -104,11 +104,11 @@ class TvCard extends BaseCard {
         const isOn = this.visuallyOn
 
         if (isOn) {
-            // 'Violet Horizon' (The ultimate middle ground for saturation)
-            card.style.setProperty("--card-bg", "linear-gradient(145deg, #767cda 0%, #a0a5eb 100%)")
-            card.style.setProperty("--card-text-primary", "#ffffff")
-            card.style.setProperty("--card-text-secondary", "rgba(255,255,255,0.85)")
-            card.style.setProperty("--card-icon-fill", "#ffffff")
+            // Theme overridable active state
+            card.style.setProperty("--card-bg", "var(--active-device-bg, linear-gradient(145deg, #767cda 0%, #a0a5eb 100%))")
+            card.style.setProperty("--card-text-primary", "var(--active-device-text, #ffffff)")
+            card.style.setProperty("--card-text-secondary", "var(--active-device-text-dim, rgba(255,255,255,0.85))")
+            card.style.setProperty("--card-icon-fill", "var(--active-device-text, #ffffff)")
         } else {
             card.style.removeProperty("--card-bg")
             card.style.removeProperty("--card-text-primary")
@@ -126,7 +126,7 @@ class TvCard extends BaseCard {
         if (header) {
             const iconHtml = TV_ICON
 
-            const accent = isOn ? "#525698" : "" // Perfectly balanced violet-indigo accent for toggle
+            const accent = isOn ? "rgba(255, 255, 255, 0.25)" : ""
             const accentStyle = accent ? ` style="--toggle-accent:${accent}"` : ""
 
             const existingTs = header.querySelector("toggle-switch") as any
