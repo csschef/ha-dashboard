@@ -132,11 +132,11 @@ class PcCard extends BaseCard {
         const isOn = this.visuallyOn
 
         if (isOn) {
-            // Match the TV card's 'Violet Horizon' gradient
-            card.style.setProperty("--card-bg", "linear-gradient(145deg, #767cda 0%, #a0a5eb 100%)")
-            card.style.setProperty("--card-text-primary", "#ffffff")
-            card.style.setProperty("--card-text-secondary", "rgba(255,255,255,0.85)")
-            card.style.setProperty("--card-icon-fill", "#ffffff")
+            // Match the TV card's active state via theme variables
+            card.style.setProperty("--card-bg", "var(--active-device-bg, linear-gradient(145deg, #767cda 0%, #a0a5eb 100%))")
+            card.style.setProperty("--card-text-primary", "var(--active-device-text, #ffffff)")
+            card.style.setProperty("--card-text-secondary", "var(--active-device-text-dim, rgba(255,255,255,0.85))")
+            card.style.setProperty("--card-icon-fill", "var(--active-device-text, #ffffff)")
         } else {
             card.style.removeProperty("--card-bg")
             card.style.removeProperty("--card-text-primary")
@@ -150,7 +150,7 @@ class PcCard extends BaseCard {
 
         const header = root.querySelector(".header") as HTMLElement
         if (header) {
-            const accent = isOn ? "#525698" : ""
+            const accent = isOn ? "rgba(255, 255, 255, 0.25)" : ""
             const accentStyle = accent ? ` style="--toggle-accent:${accent}"` : ""
 
             const existingTs = header.querySelector("toggle-switch") as any

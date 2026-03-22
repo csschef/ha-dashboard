@@ -3,9 +3,9 @@ import { fetchCalendarEvents } from "../services/ha-service"
 
 class CalendarView extends HTMLElement {
     private calendars = [
-        { id: "calendar.saras_kalender", label: "Sara", color: "#bf8686" },
-        { id: "calendar.sebbes_kalender", label: "Sebbe", color: "#7b96b2" },
-        { id: "calendar.sebastian_privat_kalender", label: "Privat", color: "#9497ad", private: true }
+        { id: "calendar.saras_kalender", label: "Sara", color: "var(--cal-sara, #bf8686)" },
+        { id: "calendar.sebbes_kalender", label: "Sebbe", color: "var(--cal-sebbe, #7b96b2)" },
+        { id: "calendar.sebastian_privat_kalender", label: "Privat", color: "var(--cal-privat, #9497ad)", private: true }
     ]
     private events: any[] = []
     private isLoading = true

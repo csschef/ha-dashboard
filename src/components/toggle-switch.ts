@@ -46,7 +46,7 @@ class ToggleSwitch extends HTMLElement {
     // Resolve the accent: if one is provided use it, otherwise fall back to the
     // global --accent token. Embedding this in the stylesheet (not set via JS later)
     // means there is zero chance the browser paints with the wrong colour first.
-    const accentValue = initialAccent || "var(--border-color)"
+    const accentValue = initialAccent || "var(--color-success)"
 
     this.shadow.innerHTML = `
       <style>

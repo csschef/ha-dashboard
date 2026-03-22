@@ -142,11 +142,22 @@ class HistoryPopup extends HTMLElement {
                 <div class="scroll-container">
                     <div class="chart-inner" style="width: ${totalW}px;">
                         <svg viewBox="0 0 ${totalW} ${height}">
+                            <defs>
+                                <linearGradient id="h-grad-success" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="color-mix(in srgb, var(--color-success) 85%, white)"/><stop offset="100%" stop-color="color-mix(in srgb, var(--color-success) 85%, black)"/></linearGradient>
+                                <linearGradient id="h-grad-danger" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="color-mix(in srgb, var(--color-danger) 85%, white)"/><stop offset="100%" stop-color="color-mix(in srgb, var(--color-danger) 85%, black)"/></linearGradient>
+                                <linearGradient id="h-grad-yellow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="color-mix(in srgb, var(--yellow-accent) 85%, white)"/><stop offset="100%" stop-color="color-mix(in srgb, var(--yellow-accent) 85%, black)"/></linearGradient>
+                                <linearGradient id="h-grad-accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="color-mix(in srgb, var(--accent) 85%, white)"/><stop offset="100%" stop-color="color-mix(in srgb, var(--accent) 85%, black)"/></linearGradient>
+                            </defs>
                             ${chartData.map((d, i) => {
-                                const h = (d.value - yMin) / (yMax - yMin) * height
+                                const h = Math.max(1, (d.value - yMin) / (yMax - yMin) * height)
                                 const x = i * (barW + gap)
                                 const color = getColor(d.value)
-                                return `<rect class="bar" x="${x}" y="${height - h}" width="${barW}" height="${h}" fill="${color}" rx="3" fill-opacity="0.8" />`
+                                
+                                const fillUrl = color.includes('success') ? 'url(#h-grad-success)' :
+                                                color.includes('danger') ? 'url(#h-grad-danger)' :
+                                                color.includes('yellow') ? 'url(#h-grad-yellow)' : 'url(#h-grad-accent)';
+                                                
+                                return `<rect class="bar" x="${x}" y="${height - h}" width="${barW}" height="${h}" fill="${fillUrl}" rx="3" fill-opacity="1" />`
                             }).join("")}
                         </svg>
                         <div class="x-labels">
@@ -207,9 +218,9 @@ class HistoryPopup extends HTMLElement {
 .subtitle { font-size: 0.6875rem; color: var(--text-secondary); opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
 .close {
     width: 28px; height: 28px; border-radius: 50%;
-    background: color-mix(in srgb, var(--color-danger) 20%, transparent);
+    background: var(--close-bg, color-mix(in srgb, var(--color-danger) 20%, transparent));
     border: none; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--color-danger); font-size: 0.875rem; transition: all 0.2s ease;
+    cursor: pointer; color: var(--close-text, var(--color-danger)); font-size: 0.875rem; transition: all 0.2s ease;
 }
 .close:active { transform: scale(0.9); background: var(--border-color); }
 

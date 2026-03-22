@@ -55,6 +55,17 @@ export class SvgIcon extends HTMLElement {
                         overflow: visible;
                     }
 
+                    /* Color mappings for theme overrides */
+                    svg stop[stop-color="#fdc015"] { stop-color: var(--weather-sun-1, #fdc015); }
+                    svg stop[stop-color="#f3d87c"] { stop-color: var(--weather-sun-2, #f3d87c); }
+                    svg stop[stop-color="#fdd76c"] { stop-color: var(--weather-moon-1, #fdd76c); }
+                    svg stop[stop-color="#f9e095"] { stop-color: var(--weather-moon-2, #f9e095); }
+                    svg stop[stop-color="#edf0f4"] { stop-color: var(--weather-cloud-1, #edf0f4); }
+                    svg stop[stop-color="#a4a4a5"] { stop-color: var(--weather-cloud-dark, #a4a4a5); }
+                    svg stop[stop-color="#ffffff"] { stop-color: var(--weather-cloud-2, #ffffff); }
+                    svg path[fill="rgba(255,255,255,0.65)"] { fill: var(--weather-rain, rgba(255,255,255,0.65)); }
+                    svg path[fill="#fbc224"] { fill: var(--weather-lightning, #fbc224); }
+
                     /* ── Default Animations ── */
                     
                     /* Slajdande moln för ALLA molnikoner */

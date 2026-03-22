@@ -157,6 +157,7 @@ import "./components/pc-card"
 import "./components/boolean-card"
 import "./components/calendar-view"
 import "./components/calendar-popup"
+import "./components/theme-popup"
 
 /* ── TRAY & NOTIFICATIONS ── */
 
@@ -201,11 +202,18 @@ trayTiles.movie.el?.addEventListener("click", (e) => {
 const html = document.documentElement
 const themeTile = document.getElementById("toggleThemeTray")
 const themeIcon = document.getElementById("themeBtnIcon")
+const colorTrayTile = document.getElementById("openThemePicker")
 
 themeTile?.addEventListener("click", (e) => {
     e.stopPropagation()
     const currentTheme = html.getAttribute("data-theme") === "dark" ? "light" : "dark"
     applyTheme(currentTheme as any)
+})
+
+colorTrayTile?.addEventListener("click", (e) => {
+    e.stopPropagation()
+    const popup = document.getElementById("themePopup") as any
+    if (popup && popup.open) popup.open()
 })
 
 function applyTheme(theme: "light" | "dark") {
@@ -216,6 +224,10 @@ function applyTheme(theme: "light" | "dark") {
         if ('icon' in iconEl) {
             iconEl.icon = isDark ? "ph:moon-fill" : "ph:sun"
         }
+    }
+    const textEl = document.getElementById("themeBtnText")
+    if (textEl) {
+        textEl.textContent = isDark ? "Mörkt" : "Ljust"
     }
     localStorage.setItem("ha-theme", theme)
     themeTile?.classList.toggle("active", isDark)
@@ -325,7 +337,7 @@ function updateNotifications() {
             return `
             <div class="notif-card" style="background: var(--color-card); padding: 14px; border-radius: var(--radius-md); margin-bottom: 8px; border: 1px solid var(--border-color); display: flex; gap: 16px; align-items: flex-start; position: relative;">
                 <!-- Dismiss button (Popup style) -->
-                <button onclick="event.stopPropagation(); dismissNotif('${n.id}')" style="position: absolute; top: 12px; right: 12px; background: var(--color-card-alt); border: none; color: var(--text-secondary); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s ease;"><iconify-icon icon="ph:x-bold" style="font-size: 14px;"></iconify-icon></button>
+                <button onclick="event.stopPropagation(); dismissNotif('${n.id}')" style="position: absolute; top: 12px; right: 12px; background: var(--close-bg, var(--color-card-alt)); border: none; color: var(--close-text, var(--text-secondary)); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s ease;"><iconify-icon icon="ph:x-bold" style="font-size: 14px;"></iconify-icon></button>
 
                 <!-- Bild eller Ikon -->
                 <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--color-card-alt); border: 1px solid var(--border-color); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center;">
@@ -426,7 +438,7 @@ window.addEventListener("popstate", (event) => {
     const isTrayState = (event.state && event.state.type === "tray")
 
     // 2. Clear ANY active popups that aren't the target (usually all of them on back)
-    const popupIds = ["lightPopup", "historyPopup", "tvPopup", "personPopup", "settingsPopup", "todoPopup", "calendarPopup"]
+    const popupIds = ["lightPopup", "historyPopup", "tvPopup", "personPopup", "settingsPopup", "todoPopup", "calendarPopup", "themePopup"]
     popupIds.forEach(id => {
         if (id !== targetPopupId) {
             const p = document.getElementById(id) as any
@@ -656,6 +668,10 @@ subscribeEntity("sun.sun", (entity: any) => {
 const savedTheme = localStorage.getItem("ha-theme") as "light" | "dark" | null
 const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
 applyTheme(savedTheme ?? systemTheme)
+
+// Apply saved theme color
+const savedThemeColor = localStorage.getItem("ha-theme-color") || "standard"
+document.documentElement.setAttribute("data-theme-color", savedThemeColor)
 
 // ── Guest Mode & Sleep Mode (HA-backed) ─────────────────────────────────
 function updateStatusPillVisibility() {

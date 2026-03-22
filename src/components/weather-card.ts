@@ -338,24 +338,41 @@ class WeatherCard extends HTMLElement {
             .f-temp.low { opacity: 0.5; }
             .precip { font-size: 0.6875rem; font-weight: 500; color: var(--text-secondary); opacity: 0.9; }
 
-            .sun-info { display: flex; justify-content: center; gap: 32px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.8125rem; color: var(--text-secondary); font-weight: 500; }
+            .sun-info { display: flex; justify-content: center; gap: 32px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.8125rem; color: var(--text-secondary); font-weight: var(--weather-sun-weight, 500); }
             .sun-item { display: flex; align-items: center; gap: 8px; }
 
             /* ── Theme Overrides ── */
             @media (prefers-color-scheme: light) {
-                :host:not([data-theme="dark"]) { background: rgba(51,140,210,1); color: #ffffff; border-color: rgba(255, 255, 255, 0.3); }
-                :host:not([data-theme="dark"])::after { background: linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%); }
-                :host:not([data-theme="dark"]) .label, :host:not([data-theme="dark"]) .location, :host:not([data-theme="dark"]) .unit, :host:not([data-theme="dark"]) .f-temp.low, :host:not([data-theme="dark"]) .precip, :host:not([data-theme="dark"]) .sun-info { color: rgba(255, 255, 255, 0.8) !important; }
-                :host:not([data-theme="dark"]) .tabs { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); }
-                :host:not([data-theme="dark"]) .tab { color: rgba(255, 255, 255, 0.7); }
-                :host:not([data-theme="dark"]) .tab.active { background: #ffffff; color: #0088cc; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+                :host:not([data-theme="dark"]) { background: var(--weather-bg-solid, rgba(51,140,210,1)); color: var(--weather-text, #ffffff); border: var(--weather-border, 1px solid rgba(255, 255, 255, 0.3)); }
+                :host:not([data-theme="dark"])::after { background: var(--weather-bg, linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%)); }
+                :host:not([data-theme="dark"]) .label, :host:not([data-theme="dark"]) .location, :host:not([data-theme="dark"]) .unit, :host:not([data-theme="dark"]) .f-temp.low, :host:not([data-theme="dark"]) .precip, :host:not([data-theme="dark"]) .sun-info { color: var(--weather-text-dim, rgba(255, 255, 255, 0.8)) !important; }
+                :host:not([data-theme="dark"]) .tabs { background: var(--weather-tabs-bg, rgba(255, 255, 255, 0.2)); backdrop-filter: blur(4px); }
+                :host:not([data-theme="dark"]) .tab { color: var(--weather-tab-text, rgba(255, 255, 255, 0.7)); }
+                :host:not([data-theme="dark"]) .tab.active { background: var(--weather-tab-active-bg, #ffffff); color: var(--weather-tab-active-text, #0088cc); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
             }
-            :host-context([data-theme="light"]) { background: rgba(51,140,210,1); color: #ffffff; border-color: rgba(255, 255, 255, 0.3); }
-            :host-context([data-theme="light"])::after { background: linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%); }
-            :host-context([data-theme="light"]) .label, :host-context([data-theme="light"]) .location, :host-context([data-theme="light"]) .unit, :host-context([data-theme="light"]) .f-temp.low, :host-context([data-theme="light"]) .precip, :host-context([data-theme="light"]) .sun-info { color: rgba(255, 255, 255, 0.8) !important; }
-            :host-context([data-theme="light"]) .tabs { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); }
-            :host-context([data-theme="light"]) .tab { color: rgba(255, 255, 255, 0.7); }
-            :host-context([data-theme="light"]) .tab.active { background: #ffffff; color: #0088cc; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+            :host-context([data-theme="light"]) { background: var(--weather-bg-solid, rgba(51,140,210,1)); color: var(--weather-text, #ffffff); border: var(--weather-border, 1px solid rgba(255, 255, 255, 0.3)); }
+            :host-context([data-theme="light"])::after { background: var(--weather-bg, linear-gradient(180deg, rgba(51,140,210,1) 40%, rgba(89,179,224,1) 100%)); }
+            :host-context([data-theme="light"]) .label, :host-context([data-theme="light"]) .location, :host-context([data-theme="light"]) .unit, :host-context([data-theme="light"]) .f-temp.low, :host-context([data-theme="light"]) .precip, :host-context([data-theme="light"]) .sun-info { color: var(--weather-text-dim, rgba(255, 255, 255, 0.8)) !important; }
+            :host-context([data-theme="light"]) .tabs { background: var(--weather-tabs-bg, rgba(255, 255, 255, 0.2)); backdrop-filter: blur(4px); }
+            :host-context([data-theme="light"]) .tab { color: var(--weather-tab-text, rgba(255, 255, 255, 0.7)); }
+            :host-context([data-theme="light"]) .tab.active { background: var(--weather-tab-active-bg, #ffffff); color: var(--weather-tab-active-text, #0088cc); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+            
+            /* ── iOS Dark Mode ── */
+            :host-context([data-theme-color="ios"][data-theme="dark"]) { background: var(--weather-bg-solid); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--weather-text, #ffffff); }
+            :host-context([data-theme-color="ios"][data-theme="dark"])::after { background: var(--weather-bg); }
+            :host-context([data-theme-color="ios"][data-theme="dark"]) .label, :host-context([data-theme-color="ios"][data-theme="dark"]) .location, :host-context([data-theme-color="ios"][data-theme="dark"]) .unit, :host-context([data-theme-color="ios"][data-theme="dark"]) .f-temp.low, :host-context([data-theme-color="ios"][data-theme="dark"]) .precip, :host-context([data-theme-color="ios"][data-theme="dark"]) .sun-info { color: var(--weather-text-dim, rgba(255, 255, 255, 0.8)) !important; }
+            :host-context([data-theme-color="ios"][data-theme="dark"]) .tabs { background: var(--weather-tabs-bg); }
+            :host-context([data-theme-color="ios"][data-theme="dark"]) .tab { color: var(--weather-tab-text, rgba(255, 255, 255, 0.7)); }
+            :host-context([data-theme-color="ios"][data-theme="dark"]) .tab.active { background: var(--weather-tab-active-bg, #ffffff); color: var(--weather-tab-active-text, #000000); }
+
+            @media (prefers-color-scheme: dark) {
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) { background: var(--weather-bg-solid); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--weather-text, #ffffff); }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"]))::after { background: var(--weather-bg); }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) .label, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .location, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .unit, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .f-temp.low, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .precip, :host-context([data-theme-color="ios"]:not([data-theme="light"])) .sun-info { color: var(--weather-text-dim, rgba(255, 255, 255, 0.8)) !important; }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) .tabs { background: var(--weather-tabs-bg); }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) .tab { color: var(--weather-tab-text, rgba(255, 255, 255, 0.7)); }
+                :host-context([data-theme-color="ios"]:not([data-theme="light"])) .tab.active { background: var(--weather-tab-active-bg, #ffffff); color: var(--weather-tab-active-text, #000000); }
+            }
         `;
     }
 

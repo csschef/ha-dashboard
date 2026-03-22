@@ -35,8 +35,7 @@ body {
     /* typography */
     --font-main: "Inter", system-ui, sans-serif;
 
-    /* ── Nordic Stone ──────────────────────────────────────────────────────── */
-    /* Muted, professional stone/snow bases */
+    /* ── BASE STANDARD THEME: Nordic Stone (Light by default) ──────────── */
     --color-bg: #eff1f3;
     --color-card: #ffffff;
     --color-card-alt: #e1e4e8;
@@ -49,20 +48,27 @@ body {
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
 
-    /* Nordic Steel Blue — the user's favorite */
     --accent: #5b7fa6;
     --accent-muted: rgba(91, 127, 166, 0.12);
     --accent-low: rgba(91, 127, 166, 0.06);
 
-    /* Clean Nordic Gold */
     --yellow-accent: #f1c25d;
     --color-success: #88af70;
     --color-danger: #cd5a65;
     --energy-glow-opacity: 0.08;
     --color-badge-bg: #f8b55e;
+
+    /* Device active state & Calendar */
+    --active-device-bg: linear-gradient(145deg, #767cda 0%, #a0a5eb 100%);
+    --active-device-text: #ffffff;
+    --active-device-text-dim: rgba(255, 255, 255, 0.85);
+
+    --cal-sara: #bf8686;
+    --cal-sebbe: #7b96b2;
+    --cal-privat: #9497ad;
 }
 
-/* ── Dark theme via system preference ──────────────────────────────────── */
+/* ── Dark theme via system preference (Fallback) ───────────────────────── */
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
         /* Deep Arctic Slate */
@@ -82,16 +88,13 @@ body {
         --accent-muted: rgba(129, 161, 193, 0.15);
         --accent-low: rgba(129, 161, 193, 0.08);
 
-        --yellow-accent: #f1c25d;
-        --color-success: #88af70;
-        --color-danger: #cd5a65;
         --energy-glow-opacity: 0.18;
-        --color-badge-bg: #f8be71;
     }
 }
 
-/* ── Manual dark override ───────────────────────────────────────────────── */
-[data-theme="dark"] {
+/* ── Standard Dark (Manual override) ───────────────────────────────────── */
+[data-theme-color="standard"][data-theme="dark"],
+[data-theme="dark"]:not([data-theme-color="ios"]):not([data-theme-color="neon"]) {
     --color-bg: #1a1e23;
     --color-card: #242933;
     --color-card-alt: #2e3440;
@@ -108,34 +111,103 @@ body {
     --accent-muted: rgba(129, 161, 193, 0.15);
     --accent-low: rgba(129, 161, 193, 0.08);
 
-    --yellow-accent: #f1c25d;
-    --color-success: #88af70;
-    --color-danger: #cd5a65;
     --energy-glow-opacity: 0.18;
-    --color-badge-bg: #f8be71;
 }
 
-/* ── Manual light override ──────────────────────────────────────────────── */
-[data-theme="light"] {
-    --color-bg: #eff1f3;
+/* ── Theme: iOS / Homey (Apple Style) ──────────────────────────────────── */
+/* Structure overrides */
+[data-theme-color="ios"]:root,
+[data-theme-color="ios"] {
+    --close-bg: var(--color-danger);
+    --close-text: #ffffff;
+    /* Extreme rounded corners */
+    --radius-sm: 14px;
+    --radius-md: 22px;
+    --radius-lg: 28px;
+    --radius-xl: 34px;
+
+    /* Apple semantic colors */
+    --color-danger: #ff3b30;
+    --color-success: #34c759;
+    --yellow-accent: #ffcc00;
+    --color-badge-bg: var(--yellow-accent);
+    --color-badge-text: #000000;
+    --knob-shadow: none;
+
+    /* Weather - iOS Solid Blue */
+    --weather-bg-solid: #007aff;
+    --weather-bg: #007aff;
+    --weather-text: #ffffff;
+    --weather-text-dim: rgba(255, 255, 255, 0.85);
+    --weather-border: none;
+
+    /* Weather Icons - Flat Apple Style */
+    --weather-sun-1: #ffcc00;
+    --weather-sun-2: #ffcc00;
+    --weather-moon-1: #fdd76c;
+    --weather-moon-2: #fdd76c;
+    --weather-cloud-1: #ffffff;
+    --weather-cloud-2: #ffffff;
+    --weather-cloud-dark: #d1d1d6;
+    --weather-rain: #5fc9f8;
+    --weather-lightning: #ffcc00;
+    --weather-sun-weight: 300;
+
+    --weather-tabs-bg: rgba(255, 255, 255, 0.25);
+    --weather-tab-text: rgba(255, 255, 255, 0.9);
+    --weather-tab-active-bg: #ffffff;
+    --weather-tab-active-text: #007aff;
+
+    /* Device active state & Calendar */
+    --active-device-bg: var(--accent);
+    --active-device-text: #ffffff;
+    --active-device-text-dim: rgba(255, 255, 255, 0.85);
+
+    --cal-sara: #ff9500;
+    --cal-sebbe: #007aff;
+    --cal-privat: #af52de;
+}
+
+/* iOS Light */
+[data-theme-color="ios"][data-theme="light"] {
+    --color-bg: #f2f2f7;
     --color-card: #ffffff;
-    --color-card-alt: #e1e4e8;
-    --color-overlay: rgba(46, 52, 64, 0.3);
+    --color-card-alt: #e5e5ea;
+    --color-overlay: rgba(0, 0, 0, 0.2);
 
-    --text-primary: #2e3440;
-    --text-secondary: #4c566a;
+    --text-primary: #000000;
+    --text-secondary: #8e8e93;
 
-    --border-color: #d1d8e0;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --border-color: rgba(60, 60, 67, 0.08);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.08);
 
-    --accent: #5b7fa6;
-    --accent-muted: rgba(91, 127, 166, 0.12);
-    --accent-low: rgba(91, 127, 166, 0.06);
+    --accent: #007aff;
+    --accent-muted: rgba(0, 122, 255, 0.12);
+    --accent-low: rgba(0, 122, 255, 0.06);
+}
 
-    --yellow-accent: #ebcb8b;
-    --color-success: #a3be8c;
-    --color-danger: #bf616a;
-    --energy-glow-opacity: 0.08;
-    --color-badge-bg: #f8b55e;
+/* iOS Dark */
+[data-theme-color="ios"][data-theme="dark"] {
+    --color-bg: #000000;
+    --color-card: #1c1c1e;
+    --color-card-alt: #2c2c2e;
+    --color-overlay: rgba(0, 0, 0, 0.6);
+
+    --text-primary: #ffffff;
+    --text-secondary: #98989d;
+
+    --border-color: rgba(84, 84, 88, 0.4);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 15px 50px rgba(0, 0, 0, 0.5);
+
+    --accent: #0a84ff;
+    --accent-muted: rgba(10, 132, 255, 0.15);
+    --accent-low: rgba(10, 132, 255, 0.1);
+
+    /* Vibrant Dark Blue iOS Weather */
+    --weather-bg-solid: #0a4a9c;
+    --weather-bg: #0a4a9c;
+
+    --weather-tab-active-text: #0a84ff;
 }

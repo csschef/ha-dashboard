@@ -173,7 +173,6 @@ body.tray-open .bottom-dock {
     justify-content: center;
     position: relative;
     color: var(--text-primary);
-    opacity: 0.8;
 }
 
 .status-icon.active {
@@ -182,6 +181,7 @@ body.tray-open .bottom-dock {
 
 .status-icon iconify-icon {
     font-size: 1.1rem;
+    opacity: 0.8;
     /* Slightly smaller for better hierarchy */
 }
 
@@ -191,7 +191,7 @@ body.tray-open .bottom-dock {
     top: -6px;
     left: 18px;
     background: var(--color-badge-bg);
-    color: #2e3440;
+    color: var(--color-badge-text, #2e3440);
     font-size: 11px;
     font-weight: 800;
     min-width: 18px;
@@ -203,6 +203,8 @@ body.tray-open .bottom-dock {
     padding: 0 4px;
     line-height: 1;
     z-index: 10;
+    border: 1.5px solid var(--color-card);
+    box-sizing: border-box;
 }
 
 @keyframes bell-ring {
@@ -256,15 +258,16 @@ body.tray-open .bottom-dock {
 .tray-grid {
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .tray-tile {
     background: var(--color-card);
     border: 1px solid var(--border-color);
     border-radius: 50%;
-    width: 68px;
-    height: 68px;
+    width: 60px;
+    height: 60px;
     display: flex;
     flex-direction: column;
     align-items: center;
