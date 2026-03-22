@@ -102,10 +102,17 @@ class EnergyView extends HTMLElement {
 
         // Max price for scaling
         const peakInWindow = Math.max(...displayPrices)
+        const lowInWindow = Math.min(0, ...displayPrices)
+        
         const maxDisplay = Math.max(250, Math.ceil(peakInWindow / 50) * 50)
+        let minDisplay = Math.floor(lowInWindow / 50) * 50
+        if (minDisplay > 0) minDisplay = 0
+        
+        const totalRange = maxDisplay - minDisplay
 
         const yAxisSteps: number[] = []
-        for (let i = 0; i <= maxDisplay; i += 50) {
+        const stepSize = totalRange > 400 ? 100 : 50
+        for (let i = minDisplay; i <= maxDisplay; i += stepSize) {
             yAxisSteps.push(i)
         }
 
@@ -114,6 +121,7 @@ class EnergyView extends HTMLElement {
         const pxPerHour = (barWidth + barGap) * pointsPerHour
         const chartHeight = 160
         const totalWidth = (numBars / pointsPerHour) * pxPerHour
+        const zeroY = chartHeight - ((0 - minDisplay) / totalRange) * chartHeight
 
         const currentStatus = this.getPriceStatus(currentPrice, this.pricesToday)
 
@@ -212,7 +220,7 @@ class EnergyView extends HTMLElement {
                 <div class="y-axis">
                     <div class="y-axis-labels">
                         ${yAxisSteps.map(val => {
-            const y = chartHeight - (val / maxDisplay) * chartHeight;
+            const y = chartHeight - ((val - minDisplay) / totalRange) * chartHeight;
             return `<div class="y-label" style="top: ${y}px">${val}</div>`;
         }).join('')}
                     </div>
@@ -224,17 +232,19 @@ class EnergyView extends HTMLElement {
                         <svg viewBox="0 0 ${totalWidth} ${chartHeight}">
                             <!-- Grid Lines -->
                             ${yAxisSteps.map(val => {
-            const y = chartHeight - (val / maxDisplay) * chartHeight;
-            return `<line x1="0" y1="${y}" x2="${totalWidth}" y2="${y}" stroke="var(--border-color)" stroke-opacity="0.1" stroke-dasharray="4,4" />`;
+            const y = chartHeight - ((val - minDisplay) / totalRange) * chartHeight;
+            // Draw the zero line bolder
+            const isZeroLine = val === 0;
+            return `<line x1="0" y1="${y}" x2="${totalWidth}" y2="${y}" stroke="var(--border-color)" stroke-opacity="${isZeroLine ? '0.4' : '0.1'}" stroke-dasharray="${isZeroLine ? 'none' : '4,4'}" stroke-width="${isZeroLine ? '1' : '1'}" />`;
         }).join('')}
 
                             <!-- Bars -->
                             ${displayPrices.map((p, i) => {
-            const h = (p / maxDisplay) * chartHeight;
+            const h = Math.max(1, (Math.abs(p) / totalRange) * chartHeight);
             const x = i * (barWidth + barGap);
+            const yPos = p >= 0 ? zeroY - h : zeroY;
             const { color } = this.getPriceStatus(p, this.pricesToday);
-            const isCurrent = (displayStartIdx + i) === currentIndex;
-            return `<rect class="bar" x="${x}" y="${chartHeight - h}" width="${barWidth}" height="${h}" fill="${color}" rx="3" fill-opacity="1" />`;
+            return `<rect class="bar" x="${x}" y="${yPos}" width="${barWidth}" height="${h}" fill="${color}" rx="3" fill-opacity="1" />`;
         }).join('')}
 
                             <!-- Now Indicator line -->
