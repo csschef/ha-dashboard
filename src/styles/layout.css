@@ -28,7 +28,7 @@ body {
     z-index: 5000;
     background: linear-gradient(
         to bottom,
-        var(--color-bg) 0%,
+        var(--color-card) 0%,
         color-mix(in srgb, var(--color-card) 80%, transparent) 100%
     );
     backdrop-filter: blur(24px) saturate(150%);
