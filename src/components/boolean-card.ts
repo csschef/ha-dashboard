@@ -83,33 +83,24 @@ class BooleanCard extends BaseCard {
         const subtitleEl = root.querySelector(".subtitle") as HTMLElement | null
         if (subtitleEl) subtitleEl.textContent = isOn ? "Aktiv" : "Inaktiv"
 
-        if (isOn) {
-            card.style.setProperty("--card-bg", "color-mix(in srgb, var(--color-success) 18%, var(--color-card))")
-            card.style.setProperty("--card-text-primary", "var(--text-primary)")
-            card.style.setProperty("--card-text-secondary", "var(--text-secondary)")
-            card.style.setProperty("border-color", "color-mix(in srgb, var(--color-success) 35%, transparent)")
-        } else {
-            card.style.removeProperty("--card-bg")
-            card.style.removeProperty("--card-text-primary")
-            card.style.removeProperty("--card-text-secondary")
-            card.style.removeProperty("border-color")
-        }
+        // Always use advice-card (energitips) style: soft green gradient + green border
+        card.style.setProperty("--card-bg", "linear-gradient(135deg, color-mix(in srgb, var(--color-success) 15%, transparent) 0%, color-mix(in srgb, var(--color-success) 5%, transparent) 100%)")
+        card.style.setProperty("border-color", "color-mix(in srgb, var(--color-success) 30%, transparent)")
+        card.style.setProperty("--card-text-primary", "var(--text-primary)")
+        card.style.setProperty("--card-text-secondary", "var(--color-success)")
+        card.style.setProperty("--card-icon-fill", "var(--color-success)")
 
         const existingTs = header.querySelector("toggle-switch") as HTMLElement | null
 
         if (existingTs) {
             existingTs.setAttribute("checked", String(isOn))
-            if (isOn) {
-                existingTs.setAttribute("accent", "var(--color-success)")
-            } else {
-                existingTs.removeAttribute("accent")
-            }
+            existingTs.setAttribute("accent", "var(--color-success)")
             const iconWrapper = header.querySelector("div") as HTMLElement | null
             if (iconWrapper) iconWrapper.innerHTML = ICON_SVG("card-icon")
         } else {
             header.innerHTML = `
                 <div style="display:flex;align-items:center">${ICON_SVG("card-icon")}</div>
-                <toggle-switch checked="${isOn}" ${isOn ? 'accent="var(--color-success)"' : ''}></toggle-switch>
+                <toggle-switch checked="${isOn}" accent="var(--color-success)"></toggle-switch>
             `
             header.querySelector("toggle-switch")?.addEventListener("toggle", (e) => {
                 e.stopPropagation()

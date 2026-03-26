@@ -182,7 +182,7 @@ class MealsView extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 gap: 0;
-                background: none;
+                background: var(--color-card);
                 border-radius: var(--radius-md);
                 overflow: hidden;
                 border: 1px solid var(--border-color);
@@ -200,6 +200,8 @@ class MealsView extends HTMLElement {
             .meal-card.today {
                 background: var(--accent);
                 border-left-color: transparent;
+                border-radius: var(--radius-md);
+                margin: 4px 0;
             }
             .meal-card.today .day-label, .meal-card.today .meal-input {
                 color: #ffffff;
