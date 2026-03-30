@@ -1,7 +1,15 @@
 import { getEntity, subscribeEntity } from "../store/entity-store"
 
+type PricePoint = {
+    value: number
+    start: Date | null
+    end: Date | null
+}
+
 class EnergyView extends HTMLElement {
     private energyEntity = "sensor.nordpool_kwh_se4_sek_2_10_0"
+    private pointsToday: PricePoint[] = []
+    private pointsTomorrow: PricePoint[] = []
     private pricesToday: number[] = []
     private pricesTomorrow: number[] = []
     private hasInitialScrolled = false
@@ -17,8 +25,10 @@ class EnergyView extends HTMLElement {
         this.render()
         subscribeEntity(this.energyEntity, (state: any) => {
             if (state?.attributes) {
-                this.pricesToday = this.parseNordpoolData(state.attributes.raw_today || state.attributes.today)
-                this.pricesTomorrow = this.parseNordpoolData(state.attributes.raw_tomorrow || state.attributes.tomorrow)
+                this.pointsToday = this.parseNordpoolData(state.attributes.raw_today || state.attributes.today)
+                this.pointsTomorrow = this.parseNordpoolData(state.attributes.raw_tomorrow || state.attributes.tomorrow)
+                this.pricesToday = this.pointsToday.map(p => p.value)
+                this.pricesTomorrow = this.pointsTomorrow.map(p => p.value)
             }
             this.render()
             this.scrollToNow()
@@ -55,9 +65,49 @@ class EnergyView extends HTMLElement {
         }
     }
 
-    private parseNordpoolData(data: any): number[] {
+    private parseNordpoolData(data: any): PricePoint[] {
         if (!data || !Array.isArray(data)) return []
-        return data.map(item => typeof item === 'object' ? item.value : item)
+        return data.map(item => {
+            if (typeof item === "object" && item !== null) {
+                const start = item.start ? new Date(item.start) : null
+                const end = item.end ? new Date(item.end) : null
+                return {
+                    value: Number(item.value ?? 0),
+                    start: start && !Number.isNaN(start.getTime()) ? start : null,
+                    end: end && !Number.isNaN(end.getTime()) ? end : null
+                }
+            }
+
+            return {
+                value: Number(item ?? 0),
+                start: null,
+                end: null
+            }
+        })
+    }
+
+    private findCurrentPointIndex(points: PricePoint[], now: Date): number {
+        if (!points.length) return -1
+
+        const nowMs = now.getTime()
+        for (let i = 0; i < points.length; i++) {
+            const current = points[i]
+            if (!current.start) continue
+
+            const startMs = current.start.getTime()
+            const nextStart = i + 1 < points.length ? points[i + 1].start : null
+            const endMs = current.end?.getTime() ?? (nextStart ? nextStart.getTime() : startMs + 3600000)
+
+            if (nowMs >= startMs && nowMs < endMs) {
+                return i
+            }
+        }
+
+        const pointsPerHour = points.length > 48 ? 4 : 1
+        return Math.min(
+            points.length - 1,
+            now.getHours() * pointsPerHour + Math.floor(now.getMinutes() / (60 / pointsPerHour))
+        )
     }
 
     private getPriceStatus(current: number, allPrices: number[]): { color: string; bg: string; label: string } {
@@ -82,22 +132,25 @@ class EnergyView extends HTMLElement {
         }
 
         const pointsPerHour = this.pricesToday.length > 48 ? 4 : 1
-        const currentPrice = parseFloat(entity.state) || 0
         const minToday = Math.min(...this.pricesToday)
         const maxToday = Math.max(...this.pricesToday)
         const avgToday = this.pricesToday.reduce((a, b) => a + b, 0) / this.pricesToday.length
 
         const now = new Date()
-        const currentHour = now.getHours()
-        const currentMinute = now.getMinutes()
-        const currentIndex = currentHour * pointsPerHour + Math.floor(currentMinute / (60 / pointsPerHour))
+        const currentIndex = this.findCurrentPointIndex(this.pointsToday, now)
+        const fallbackCurrentPrice = parseFloat(entity.state) || 0
+        const currentPrice = currentIndex >= 0 && currentIndex < this.pricesToday.length
+            ? this.pricesToday[currentIndex]
+            : fallbackCurrentPrice
 
         // Combine data
         const combined = [...this.pricesToday, ...this.pricesTomorrow]
+        const combinedPoints = [...this.pointsToday, ...this.pointsTomorrow]
 
-        // Window starts 4 hours back, aligned to full hour
-        const displayStartIdx = Math.max(0, (currentHour - 4) * pointsPerHour)
+        // Window starts roughly 4 hours back from current slot
+        const displayStartIdx = Math.max(0, Math.max(0, currentIndex) - (4 * pointsPerHour))
         const displayPrices = combined.slice(displayStartIdx)
+        const displayPoints = combinedPoints.slice(displayStartIdx)
         const numBars = displayPrices.length
 
         // Max price for scaling
@@ -228,7 +281,7 @@ class EnergyView extends HTMLElement {
                 
                 <div class="scroll-container">
                     <div class="chart-inner">
-                        <div class="now-tag" style="left: ${(Math.min(numBars, currentIndex - displayStartIdx + 0.5) / numBars) * 100}%;">Nu</div>
+                        <div class="now-tag" style="left: ${(Math.min(numBars, Math.max(0, currentIndex - displayStartIdx + 0.5)) / Math.max(1, numBars)) * 100}%;">Nu</div>
                         <svg viewBox="0 0 ${totalWidth} ${chartHeight}">
                             <defs>
                                 <linearGradient id="e-grad-success" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="color-mix(in srgb, var(--color-success) 85%, white)"/><stop offset="100%" stop-color="color-mix(in srgb, var(--color-success) 85%, black)"/></linearGradient>
@@ -259,20 +312,34 @@ class EnergyView extends HTMLElement {
         }).join('')}
 
                             <!-- Now Indicator line -->
-                            <line class="now-line" x1="${(currentIndex - displayStartIdx + 0.5) * (barWidth + barGap)}" y1="0" x2="${(currentIndex - displayStartIdx + 0.5) * (barWidth + barGap)}" y2="${chartHeight}" />
+                            <line class="now-line" x1="${Math.max(0, (currentIndex - displayStartIdx + 0.5) * (barWidth + barGap))}" y1="0" x2="${Math.max(0, (currentIndex - displayStartIdx + 0.5) * (barWidth + barGap))}" y2="${chartHeight}" />
                         </svg>
                         
                         <div class="chart-labels">
                             ${(() => {
+                const labels: string[] = [];
+
+                for (let i = 0; i < displayPoints.length; i++) {
+                    const point = displayPoints[i];
+                    if (!point.start || point.start.getMinutes() !== 0) continue;
+
+                    const leftPx = i * (barWidth + barGap);
+                    const h = point.start.getHours();
+                    labels.push(`<span class="time-label" style="left: ${leftPx}px">${h < 10 ? '0' + h : h}:00</span>`);
+                }
+
+                if (labels.length > 0) {
+                    return labels.join('');
+                }
+
                 const startHour = Math.floor(displayStartIdx / pointsPerHour);
                 const totalHours = numBars / pointsPerHour;
-                let hourLabels = [];
                 for (let i = 0; i < totalHours; i++) {
                     const h = (startHour + i) % 24;
                     const leftPx = i * pointsPerHour * (barWidth + barGap);
-                    hourLabels.push(`<span class="time-label" style="left: ${leftPx}px">${h < 10 ? '0' + h : h}:00</span>`);
+                    labels.push(`<span class="time-label" style="left: ${leftPx}px">${h < 10 ? '0' + h : h}:00</span>`);
                 }
-                return hourLabels.join('');
+                return labels.join('');
             })()}
                         </div>
                     </div>
@@ -280,35 +347,51 @@ class EnergyView extends HTMLElement {
             </div>
         </div>
 
-        ${this.renderAdvice(currentHour, pointsPerHour)}
+        ${this.renderAdvice(Math.max(0, currentIndex), pointsPerHour)}
         `;
 
         // Ensure initial scroll after render
         requestAnimationFrame(() => this.scrollToNow());
     }
 
-    private renderAdvice(currentHour: number, pointsPerHour: number) {
+    private renderAdvice(currentIndex: number, pointsPerHour: number) {
         if (!this.pricesToday.length) return '';
         const windowSize = 3 * pointsPerHour;
         let bestStartIdx = -1;
         let minAvg = Infinity;
-        const remainingToday = this.pricesToday.slice(currentHour * pointsPerHour);
-        const allAvailable = [...remainingToday, ...this.pricesTomorrow];
-        if (allAvailable.length < windowSize) return '';
-        for (let i = 0; i <= allAvailable.length - windowSize; i++) {
-            const window = allAvailable.slice(i, i + windowSize);
-            const avg = window.reduce((a, b) => a + b, 0) / windowSize;
+
+        const allPoints = [...this.pointsToday, ...this.pointsTomorrow];
+        const clampedCurrentIndex = Math.max(0, currentIndex);
+        const remainingPoints = allPoints.slice(clampedCurrentIndex);
+        if (remainingPoints.length < windowSize) return '';
+
+        for (let i = 0; i <= remainingPoints.length - windowSize; i++) {
+            const window = remainingPoints.slice(i, i + windowSize);
+            const avg = window.reduce((sum, point) => sum + point.value, 0) / windowSize;
             if (avg < minAvg) {
                 minAvg = avg;
                 bestStartIdx = i;
             }
         }
-        const absoluteIdx = (currentHour * pointsPerHour) + bestStartIdx;
-        const startH = Math.floor(absoluteIdx / pointsPerHour) % 24;
-        const endH = (Math.floor((absoluteIdx + windowSize) / pointsPerHour)) % 24;
-        const isTomorrow = absoluteIdx >= (24 * pointsPerHour);
-        const timeLabel = `${startH < 10 ? '0' + startH : startH}:00 - ${endH < 10 ? '0' + endH : endH}:00`;
-        const dayLabel = isTomorrow ? 'imorgon' : 'idag';
+
+        const absoluteIdx = clampedCurrentIndex + bestStartIdx;
+        const startPoint = allPoints[absoluteIdx];
+        const endPoint = allPoints[Math.min(allPoints.length - 1, absoluteIdx + windowSize)];
+
+        let timeLabel = '';
+        if (startPoint?.start && endPoint?.start) {
+            const startH = startPoint.start.getHours();
+            const startM = startPoint.start.getMinutes();
+            const endH = endPoint.start.getHours();
+            const endM = endPoint.start.getMinutes();
+            timeLabel = `${startH < 10 ? '0' + startH : startH}:${startM < 10 ? '0' + startM : startM} - ${endH < 10 ? '0' + endH : endH}:${endM < 10 ? '0' + endM : endM}`;
+        } else {
+            const startH = Math.floor(absoluteIdx / pointsPerHour) % 24;
+            const endH = (Math.floor((absoluteIdx + windowSize) / pointsPerHour)) % 24;
+            timeLabel = `${startH < 10 ? '0' + startH : startH}:00 - ${endH < 10 ? '0' + endH : endH}:00`;
+        }
+
+        const dayLabel = absoluteIdx >= this.pointsToday.length ? 'imorgon' : 'idag';
         return `
             <div class="advice-card">
                 <div class="advice-icon">
