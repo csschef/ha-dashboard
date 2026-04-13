@@ -18,9 +18,17 @@ class WeatherCard extends HTMLElement {
     private isExpanded: boolean = false
     private showDebug: boolean = false
     private fetchError: string = ""
+    private lastFetchAttemptMs: number = 0
+    private rateLimitUntilMs: number = 0
+    private rateLimitBackoffMs: number = 0
+    private weatherCache = new Map<string, { weather: any; location: string; ts: number }>()
     private viewMode: 'hourly' | 'daily' = (localStorage.getItem("weather_view_mode") as 'hourly' | 'daily') || 'daily'
     private static readonly DAY_START_HOUR = 6
     private static readonly DAY_END_HOUR = 21
+    private static readonly FETCH_COOLDOWN_MS = 60_000
+    private static readonly CACHE_TTL_MS = 10 * 60_000
+    private static readonly RATE_LIMIT_INITIAL_BACKOFF_MS = 30_000
+    private static readonly RATE_LIMIT_MAX_BACKOFF_MS = 10 * 60_000
 
     private imageMap: Record<string, string> = {
         // ── Dina SVG-ikoner ──────────────────────────────────
@@ -95,6 +103,33 @@ class WeatherCard extends HTMLElement {
 
         // Only fetch if location actually changed
         if (coords === this.lastCoords) return;
+
+        const now = Date.now()
+        const cached = this.weatherCache.get(coords)
+        if (cached && now - cached.ts <= WeatherCard.CACHE_TTL_MS) {
+            this.localWeather = cached.weather
+            this.localLocation = cached.location
+            this.fetchError = ""
+            this.setAttribute("loaded", "")
+            this.lastCoords = coords
+            this.render()
+            return
+        }
+
+        if (now < this.rateLimitUntilMs) {
+            const waitSeconds = Math.max(1, Math.ceil((this.rateLimitUntilMs - now) / 1000))
+            this.fetchError = `Rate limit (${waitSeconds}s)`
+            this.render()
+            return
+        }
+
+        if (now - this.lastFetchAttemptMs < WeatherCard.FETCH_COOLDOWN_MS) {
+            this.fetchError = "Vantar innan ny uppdatering"
+            this.render()
+            return
+        }
+
+        this.lastFetchAttemptMs = now
         this.lastCoords = coords;
 
         try {
@@ -119,11 +154,27 @@ class WeatherCard extends HTMLElement {
             if (!weatherRes.ok) throw new Error(`Weather error ${weatherRes.status}`);
 
             this.localWeather = await weatherRes.json();
+            this.weatherCache.set(coords, {
+                weather: this.localWeather,
+                location: this.localLocation,
+                ts: Date.now()
+            })
+            this.rateLimitUntilMs = 0
+            this.rateLimitBackoffMs = 0
             this.setAttribute("loaded", "");
             this.fetchError = "";
         } catch (e: any) {
             console.error("Weather fetch failed:", e);
-            this.fetchError = "Anslutningsfel";
+            if (String(e?.message || "").includes("429")) {
+                const nextBackoff = this.rateLimitBackoffMs > 0
+                    ? Math.min(this.rateLimitBackoffMs * 2, WeatherCard.RATE_LIMIT_MAX_BACKOFF_MS)
+                    : WeatherCard.RATE_LIMIT_INITIAL_BACKOFF_MS
+                this.rateLimitBackoffMs = nextBackoff
+                this.rateLimitUntilMs = Date.now() + nextBackoff
+                this.fetchError = `Rate limit (${Math.ceil(nextBackoff / 1000)}s)`
+            } else {
+                this.fetchError = "Anslutningsfel";
+            }
         }
 
         this.render()
@@ -143,6 +194,7 @@ class WeatherCard extends HTMLElement {
         const sun = getEntity("sun.sun")
 
         if (!weather) return
+        this.setAttribute("loaded", "")
 
         const isDaily = this.viewMode === 'daily'
         const isNight = sun?.state === "below_horizon"
